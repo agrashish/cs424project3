@@ -14,14 +14,13 @@ library(leaflet)
 #(use rawdata and save into a new dataframe for your stuff ex: variableName <- rawdata)
 rawdata <- read.csv(file = "movies_data.csv")
 
+#overallData is used for our overall plots
+#overallData only has unique titles (so one row for each movie)
 overallData <- rawdata
-##overallData only has unique titles (so one row for each movie)
 overallData <- rawdata[order(rawdata$Year),]
 overallData <- overallData[!duplicated(overallData["Title"]),]
-#for ploting purposes
 overallData$Year <- factor(overallData$Year)
 overallData$Release.Date <- as.character(overallData$Release.Date)
-
 overallData$Month <- sapply(strsplit(overallData$Release.Date, " "), function(x) {
   if (length(x) == 2) {
     x[1]
@@ -30,29 +29,30 @@ overallData$Month <- sapply(strsplit(overallData$Release.Date, " "), function(x)
     x[2]
   }
 })
-overallData$Month <- factor(overallData$Month, 
-                levels = c("January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December")
-                    )
+overallData$Month <- 
+  factor(overallData$Month, 
+    levels = c("January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December")
+  )
 
 #dataframe for keywords
 keywords <- as.data.frame(table(rawdata$Keyword))
 names(keywords)[names(keywords) == "Var1"] <- "Keyword"
 keywords <- keywords[rev(order(keywords$Freq)),]
 row.names(keywords) <- NULL
-#####^^--dont worry about this stuff--^^#######
 
 
-
+# begin ui
 ui <- dashboardPage(
   dashboardHeader(title = "CS 424 Project 3"),
   dashboardSidebar(
     width = 300,
     sidebarMenu(
       menuItem("Dashboard", tabName ="dashboard", icon = icon("dashboard")),
-      menuItem("Page Info",tabName = "til", startExpanded = F, textOutput("il"), textOutput("il2"),textOutput("il3"), textOutput("il4")),
-      menuItem("Source: ",tabName = "lit",startExpanded = F, textOutput("li"))
-      
-      
+      menuItem("About",tabName = "til", startExpanded = F, 
+               h4("Coded By:"), p("Ivan M., Richard M., Aashish A."), 
+               h4("Libraries:"), p("shiny,shinydashboard,ggplot2"),
+               h4("Data Source:"), p("IMDB"), tags$p(tags$a(href = "ftp://ftp.fu-berlin.de/pub/misc/movies/database/frozendata/", "fu-berlin.de")),
+               textOutput("il"), textOutput("il2"),textOutput("il3"), textOutput("il4"))
     )
   ),
   dashboardBody(
@@ -157,32 +157,6 @@ server <- function(input, output) {
     filteredKeywords <- keywords[1:input$pickFilter,]
     rownames(filteredKeywords) <- 1:nrow(filteredKeywords)
     filteredKeywords
-  })
-  
-  output$li <- renderText({
-    #
-    text2 <- as.character("ftp://ftp.fu-berlin.de/pub/misc/movies/database/frozendata/")
-    text2
-  })
-  output$il <- renderText({
-    ##about this project
-    text1 <- as.character("Coded By: Ivan M., Richard M., Aashish A.")
-    text1
-  })
-  output$il2 <- renderText({
-    ##about this project
-    text3 <- as.character("Libraries: shiny,shinydashboard,ggplot2")
-    text3
-  })
-  output$il3 <- renderText({
-    ##about this project
-    text3 <- as.character("Data_Source:")
-    text3
-  })
-  output$il4 <- renderText({
-    ##about this project
-    text3 <- as.character("IMDB")
-    text3
   })
   
   output$MoviesPerYearChart <- renderPlot({
