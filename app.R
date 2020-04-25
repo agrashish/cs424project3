@@ -51,8 +51,8 @@ ui <- dashboardPage(
       menuItem("About",tabName = "til", startExpanded = F, 
                h4("Coded By:"), p("Ivan M., Richard M., Aashish A."), 
                h4("Libraries:"), p("shiny,shinydashboard,ggplot2"),
-               h4("Data Source:"), p("IMDB"), tags$p(tags$a(href = "ftp://ftp.fu-berlin.de/pub/misc/movies/database/frozendata/", "fu-berlin.de")),
-               textOutput("il"), textOutput("il2"),textOutput("il3"), textOutput("il4"))
+               h4("Data Source:"), p("IMDB"), tags$p(tags$a(href = "ftp://ftp.fu-berlin.de/pub/misc/movies/database/frozendata/", "fu-berlin.de"))
+      )
     )
   ),
   dashboardBody(
