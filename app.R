@@ -14,23 +14,31 @@ library(leaflet)
 #(use rawdata and save into a new dataframe for your stuff ex: variableName <- rawdata)
 rawdata <- read.csv(file = "movies_data.csv")
 
-#####vv--dont worry about this stuff--vv########
-##temp only has unique titles (so one row for each movie)
-temp <- rawdata[order(rawdata$Year),]
-temp <- temp[!duplicated(temp["Title"]),]
+overallData <- rawdata
+##overallData only has unique titles (so one row for each movie)
+overallData <- rawdata[order(rawdata$Year),]
+overallData <- overallData[!duplicated(overallData["Title"]),]
 #for ploting purposes
-temp$Year <- factor(temp$Year)
+overallData$Year <- factor(overallData$Year)
+overallData$Release.Date <- as.character(overallData$Release.Date)
 
-##temp2 dataframe to use for full data (has all data)
-temp2 <- rawdata
+overallData$Month <- sapply(strsplit(overallData$Release.Date, " "), function(x) {
+  if (length(x) == 2) {
+    x[1]
+  }
+  else {
+    x[2]
+  }
+})
+overallData$Month <- factor(overallData$Month, 
+                levels = c("January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December")
+                    )
 
-#dataframe 'a' for keywords
-a <- as.data.frame(table(temp2$Keyword))
-names(a)[names(a) == "Var1"] <- "Keyword"
-a <- a[rev(order(a$Freq)),]
-#new dataframe from 'a' consisting of top50 results from dataframe 'a'
-b <- a[1:50,]
-rownames(b) <- 1:nrow(b)
+#dataframe for keywords
+keywords <- as.data.frame(table(rawdata$Keyword))
+names(keywords)[names(keywords) == "Var1"] <- "Keyword"
+keywords <- keywords[rev(order(keywords$Freq)),]
+row.names(keywords) <- NULL
 #####^^--dont worry about this stuff--^^#######
 
 
@@ -57,6 +65,11 @@ ui <- dashboardPage(
                                box( width = 12, status = "primary", solidHeader = TRUE, plotOutput("MoviesPerYearChart", height = 360)   
                                )
                       ),
+                      tabPanel("Movies per Month",      
+                               ##chart
+                               box( width = 12, status = "primary", solidHeader = TRUE, plotOutput("MoviesPerMonthChart", height = 360)   
+                               )
+                      ),
                       tabPanel("Movies per Runtime",
                                ##chart
                                box( width = 12, status = "primary", solidHeader = TRUE, plotOutput("MoviesPerRuntimeChart", height = 360)   
@@ -72,8 +85,15 @@ ui <- dashboardPage(
                                box( width = 12, status = "primary", solidHeader = TRUE, plotOutput("MoviesPerCertificateChart", height = 360)   
                                )
                       ),
-                      tabPanel("Movie KeyWords",
+                      tabPanel("Movie Top N Keywords",
                                ##chart
+                               box(
+                                 selectInput(
+                                   "pickFilter", 
+                                   "Pick N", 
+                                   choices = c(10, 20, 30, 40, 50)
+                                 )
+                               ),
                                box( width = 12, status = "primary", solidHeader = TRUE, plotOutput("MovieKeyWordsChart", height = 420)   
                                )
                       ),tabPanel("RunTime of each Genre",      
@@ -132,6 +152,13 @@ ui <- dashboardPage(
 
 server <- function(input, output) {
   
+  filteredKeywords <- reactive({
+    #new dataframe consisting of top n results from dataframe
+    filteredKeywords <- keywords[1:input$pickFilter,]
+    rownames(filteredKeywords) <- 1:nrow(filteredKeywords)
+    filteredKeywords
+  })
+  
   output$li <- renderText({
     #
     text2 <- as.character("ftp://ftp.fu-berlin.de/pub/misc/movies/database/frozendata/")
@@ -160,16 +187,25 @@ server <- function(input, output) {
   
   output$MoviesPerYearChart <- renderPlot({
     #amount of movies per year
-    p <- ggplot(temp) + aes(x = temp$Year)+ 
+    p <- ggplot(overallData) + aes(x = overallData$Year)+ 
          geom_bar( fill="tomato3") + 
          labs(title="Bar Chart",subtitle="Amount of Movies per Year",caption="source: Year") + 
          theme(axis.text.x = element_text(angle=65, vjust=0.6)) 
     p
   })
   
+  output$MoviesPerMonthChart <- renderPlot({
+    #amount of movies per year
+    p <- ggplot(overallData) + aes(x = overallData$Month)+ 
+      geom_bar( fill="tomato3") + 
+      labs(title="Bar Chart",subtitle="Amount of Movies per Month",caption="source: Month") + 
+      theme(axis.text.x = element_text(angle=65, vjust=0.6)) 
+    p
+  })
+  
   output$MoviesPerRuntimeChart <- renderPlot({
     #amount of movies per runtime
-    z <- ggplot(temp) + aes(x = factor(temp$Running.Time))+
+    z <- ggplot(overallData) + aes(x = factor(overallData$Running.Time))+
          geom_bar( fill="tomato3") + 
          labs(title="Bar Chart",subtitle="Amount of Movies per Run Time",caption="source: Running.Time") +  
          theme(axis.text.x = element_text(angle=90, vjust=0.6)) 
@@ -178,7 +214,7 @@ server <- function(input, output) {
   
   output$RunTimeGenrePlot <- renderPlot({
     ##shows the min and max RunTime of each Genre
-    d <- ggplot(temp, aes(x=Genres, y=Running.Time, group = Running.Time)) + 
+    d <- ggplot(overallData, aes(x=Genres, y=Running.Time, group = Running.Time)) + 
          geom_point(col="tomato2", size=3) +   # Draw points
          geom_segment(aes(x=Genres, 
                        xend=Genres, 
@@ -193,7 +229,7 @@ server <- function(input, output) {
   
   output$MoviesPerGenreChart <- renderPlot({
     #amount of movies per Genre
-    t <- ggplot(temp, aes(x=factor(Genres))) + 
+    t <- ggplot(overallData, aes(x=factor(Genres))) + 
          geom_bar( width=.5, fill="tomato3") + 
          labs(title="Bar Chart", 
               subtitle="Amount per Genre", 
@@ -204,7 +240,7 @@ server <- function(input, output) {
   
   output$MoviesPerCertificateChart <- renderPlot({
     #amount of movies per Certificate
-    c <- ggplot(temp, aes(x=factor(Certificate))) + 
+    c <- ggplot(overallData, aes(x=factor(Certificate))) + 
          geom_bar( width=.5, fill="tomato3") + 
          labs(title="Bar Chart", 
               subtitle="Amount per Certificate", 
@@ -215,18 +251,18 @@ server <- function(input, output) {
   
   output$MovieKeyWordsChart <- renderPlot({
     #plot for the keyword
-    k <- ggplot(b, aes(x= Keyword, y = factor(Freq))) + 
+    keywordPlot <- ggplot(filteredKeywords(), aes(x= Keyword, y = factor(Freq))) + 
          geom_bar(position="dodge", stat="identity", width=.5, fill="tomato3") + 
          labs(title="Bar Chart", 
               subtitle="Amount per Keyword", 
               caption="source: Keyword")+ 
          theme(axis.text.x = element_text(angle=90, vjust=0.6)) + coord_flip()
-    k
+    keywordPlot
   })
   
   output$MoviesPerYearTable = DT::renderDataTable({
     #table for movies per year,full data unique titles set(no duplicates of same movie)
-    movieYearTable <- as.data.frame(table(temp$Year))
+    movieYearTable <- as.data.frame(table(overallData$Year))
     names(movieYearTable)[names(movieYearTable) == "Var1"] <- "Year"
     movieYearTable <- movieYearTable[rev(order(movieYearTable$Freq)),]
     movieYearTable
@@ -234,7 +270,7 @@ server <- function(input, output) {
   
   output$MoviesPerRunTimeTable = DT::renderDataTable({
     #table for movies per runtime
-    runtimeTable <- as.data.frame(table(temp$Running.Time))
+    runtimeTable <- as.data.frame(table(overallData$Running.Time))
     names(runtimeTable)[names(runtimeTable) == "Var1"] <- "RunTime"
     runtimeTable <- runtimeTable[rev(order(runtimeTable$Freq)),]
     runtimeTable
@@ -242,7 +278,7 @@ server <- function(input, output) {
   
   output$RunTimeGenreTable = DT::renderDataTable({
     #table for runtime/genre
-    runtimeGenresTable <- as.data.frame(table(temp$Genres,temp$Running.Time))
+    runtimeGenresTable <- as.data.frame(table(overallData$Genres,overallData$Running.Time))
     names(runtimeGenresTable)[names(runtimeGenresTable) == "Var1"] <- "Genres"
     names(runtimeGenresTable)[names(runtimeGenresTable) == "Var2"] <- "RunTime"
     runtimeGenresTable <- runtimeGenresTable[rev(order(runtimeGenresTable$Freq)),]
@@ -251,7 +287,7 @@ server <- function(input, output) {
   
   output$MovieGenreTable = DT::renderDataTable({
     #table for genre
-    genreTable <- as.data.frame(table(temp$Genres))
+    genreTable <- as.data.frame(table(overallData$Genres))
     names(genreTable)[names(genreTable) == "Var1"] <- "Genres"
     genreTable <- genreTable[rev(order(genreTable$Freq)),]
     genreTable
@@ -259,7 +295,7 @@ server <- function(input, output) {
   
   output$MovieCertificateTable = DT::renderDataTable({
     #table for movies per Certificate
-    certificateTable <- as.data.frame(table(temp$Certificate))
+    certificateTable <- as.data.frame(table(overallData$Certificate))
     names(certificateTable)[names(certificateTable) == "Var1"] <- "Certificate"
     certificateTable <- certificateTable[rev(order(certificateTable$Freq)),]
     certificateTable
@@ -267,7 +303,7 @@ server <- function(input, output) {
   
   output$MovieKeywordsTable = DT::renderDataTable({
     #table for movies per keywords
-    a
+    filteredKeywords()
   })
   
   
