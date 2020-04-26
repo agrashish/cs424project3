@@ -17,10 +17,16 @@ rawdata <- read.csv(file = "movies_data.csv")
 #overallData is used for our overall plots
 #overallData only has unique titles (so one row for each movie)
 overallData <- rawdata
+#order by year
 overallData <- rawdata[order(rawdata$Year),]
+#remove duplicates
 overallData <- overallData[!duplicated(overallData["Title"]),]
+#make years as factors (for our plots)
 overallData$Year <- factor(overallData$Year)
+
+#convert release date to character (so we can pull month from it)
 overallData$Release.Date <- as.character(overallData$Release.Date)
+#pull month from release date
 overallData$Month <- sapply(strsplit(overallData$Release.Date, " "), function(x) {
   if (length(x) == 2) {
     x[1]
@@ -29,8 +35,26 @@ overallData$Month <- sapply(strsplit(overallData$Release.Date, " "), function(x)
     x[2]
   }
 })
+#month vector
 months = c("January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December")
+#use month vector to factor Month column in right order
 overallData$Month <- factor(overallData$Month, levels = months)
+
+#counter column, so we can get averages
+overallData["Counter"] = 1
+
+#get the sums of each year unique movie title occurences
+sums <- aggregate(overallData[, "Counter"], list(overallData$Year),sum)
+#get average number of films released per year
+avgPerYear <- sum(sums["x"]) / nrow(sums)
+
+#get the sums of each year + month unique movie title occurences
+sums <- aggregate(overallData[, "Counter"], list(overallData$Year, overallData$Month),sum)
+#get average number of films released per month
+avgPerMonth <- sum(sums["x"]) / nrow(sums)
+
+#get average movie runtime
+avgByRuntime <- mean(overallData$Running.Time)
 
 #dataframe for keywords
 keywords <- as.data.frame(table(rawdata$Keyword))
@@ -46,11 +70,25 @@ ui <- dashboardPage(
     width = 300,
     sidebarMenu(
       menuItem("Dashboard", tabName ="dashboard", icon = icon("dashboard")),
-      menuItem("About",tabName = "til", startExpanded = F,
+      menuItem("About",tabName = "til", startExpanded = F, icon = icon("question"),
         h4("Coded By:"), p("Ivan M., Richard M., Aashish A."), 
         h4("Libraries:"), p("shiny,shinydashboard,ggplot2"),
         h4("Data Source:"), p("IMDB"), tags$p(tags$a(href = "ftp://ftp.fu-berlin.de/pub/misc/movies/database/frozendata/", "fu-berlin.de"))
-      )
+      ),
+      menuItem("Average Films Released Per Year", tabName = "blanks"),
+      menuItem(infoBoxOutput("avgYear")),
+      menuItem("", tabName = "blanks"),
+      menuItem("", tabName = "blanks"),
+      menuItem("", tabName = "blanks"),
+      menuItem("", tabName = "blanks"),
+      menuItem("Average Films Released Per Month", tabName = "blanks"),
+      menuItem(infoBoxOutput("avgMonth")),
+      menuItem("", tabName = "blanks"),
+      menuItem("", tabName = "blanks"),
+      menuItem("", tabName = "blanks"),
+      menuItem("", tabName = "blanks"),
+      menuItem("Average Runtime of Films", tabName = "blanks"),
+      menuItem(infoBoxOutput("avgRuntime"))
     )
   ),
   dashboardBody(
@@ -112,6 +150,30 @@ ui <- dashboardPage(
 
 #begin server
 server <- function(input, output) {
+  
+  output$avgYear <- renderInfoBox({
+    infoBox(
+      "Average Films Released Per Year",
+      paste0(sprintf("%0.2f", avgPerYear), " Films"),
+      icon = icon("calendar"),
+    )
+  })
+  
+  output$avgMonth <- renderInfoBox({
+    infoBox(
+      "Average Films Released Per Month",
+      paste0(sprintf("%0.2f", avgPerMonth), " Films"),
+      icon = icon("calendar-alt")
+    )
+  })
+  
+  output$avgRuntime <- renderInfoBox({
+    infoBox(
+      "Average Runtime of Films",
+      paste0(sprintf("%0.2f", avgByRuntime), " Minutes"),
+      icon = icon("clock")
+    )
+  })
   
   filteredKeywords <- reactive({
     #new dataframe consisting of top n results from dataframe
