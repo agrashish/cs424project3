@@ -16,9 +16,14 @@ rawdata <- read.csv(file = "movies_data.csv")
 #overallData is used for our overall plots
 #overallData only has unique titles (so one row for each movie)
 overallData <- rawdata
+#order by year
 overallData <- rawdata[order(rawdata$Year),]
+#remove duplicates
 overallData <- overallData[!duplicated(overallData["Title"]),]
+
+#convert release date to character (so we can pull month from it)
 overallData$Release.Date <- as.character(overallData$Release.Date)
+#pull month from release date
 overallData$Month <- sapply(strsplit(overallData$Release.Date, " "), function(x) {
   if (length(x) == 2) {
     x[1]
@@ -27,12 +32,36 @@ overallData$Month <- sapply(strsplit(overallData$Release.Date, " "), function(x)
     x[2]
   }
 })
+#month vector
 months = c("January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December")
+#use month vector to factor Month column in right order
 overallData$Month <- factor(overallData$Month, levels = months)
+
+#make decade column for our decade filtering
 overallData$Decade <- as.character(overallData$Year)
+#since decades don't care about individual years, remove last digit and set to 0. So 2011 is in the 2010 decade
 substr(overallData$Decade,start=4, stop=4) <- "0"
+
+#store unfactored year
 overallData$Year2 <-overallData$Year
+#make years as factors (for our plots)
 overallData$Year <- factor(overallData$Year)
+
+#counter column, so we can get averages
+overallData["Counter"] = 1
+
+#get the sums of each year unique movie title occurences
+sums <- aggregate(overallData[, "Counter"], list(overallData$Year),sum)
+#get average number of films released per year
+avgPerYear <- sum(sums["x"]) / nrow(sums)
+
+#get the sums of each year + month unique movie title occurences
+sums <- aggregate(overallData[, "Counter"], list(overallData$Year, overallData$Month),sum)
+#get average number of films released per month
+avgPerMonth <- sum(sums["x"]) / nrow(sums)
+
+#get average movie runtime
+avgByRuntime <- mean(overallData$Running.Time)
 
 #dataframe for keywords
 keywords <- as.data.frame(table(rawdata$Keyword))
@@ -48,70 +77,84 @@ ui <- dashboardPage(
     width = 300,
     sidebarMenu(
       menuItem("Dashboard", tabName ="dashboard", icon = icon("dashboard")),
-      menuItem("About",tabName = "til", startExpanded = F,
+      menuItem("About",tabName = "til", startExpanded = F, icon = icon("question"),
         h4("Coded By:"), p("Ivan M., Richard M., Aashish A."), 
         h4("Libraries:"), p("shiny,shinydashboard,ggplot2"),
         h4("Data Source:"), p("IMDB"), tags$p(tags$a(href = "ftp://ftp.fu-berlin.de/pub/misc/movies/database/frozendata/", "fu-berlin.de"))
-      )
+      ),
+      menuItem("Average Films Released Per Year", tabName = "blanks"),
+      menuItem(infoBoxOutput("avgYear")),
+      menuItem("", tabName = "blanks"),
+      menuItem("", tabName = "blanks"),
+      menuItem("", tabName = "blanks"),
+      menuItem("", tabName = "blanks"),
+      menuItem("Average Films Released Per Month", tabName = "blanks"),
+      menuItem(infoBoxOutput("avgMonth")),
+      menuItem("", tabName = "blanks"),
+      menuItem("", tabName = "blanks"),
+      menuItem("", tabName = "blanks"),
+      menuItem("", tabName = "blanks"),
+      menuItem("Average Runtime of Films", tabName = "blanks"),
+      menuItem(infoBoxOutput("avgRuntime"))
     )
   ),
   dashboardBody(
     
-    #Changing how the webpage looks
-    tags$head(
-      tags$style(
-        HTML(
-          '/* logo */
-          .skin-blue .main-header .logo {
-          background-color: #2b2bfc;
-          }
-
-          /* logo when hovered */
-          .skin-blue .main-header .logo:hover {
-          background-color: #2b2bfc;
-          }
-
-          /* navbar (rest of the header) */
-          .skin-blue .main-header .navbar {
-          background-color: #2b2bfc;
-          }
-
-          /* main sidebar */
-          .skin-blue .main-sidebar {
-          background-color: #2b2bfc;
-          }
-
-          /* active selected tab in the sidebarmenu */
-          .skin-blue .main-sidebar .sidebar .sidebar-menu .active a{
-          background-color: #ff0000;
-          }
-
-          /* other links in the sidebarmenu */
-          .skin-blue .main-sidebar .sidebar .sidebar-menu a{
-          background-color: #00ff00;
-          color: #000000;
-          }
-
-          /* other links in the sidebarmenu when hovered */
-          .skin-blue .main-sidebar .sidebar .sidebar-menu a:hover{
-          background-color: #ff69b4;
-          }
-          /* toggle button when hovered  */
-          .skin-blue .main-header .navbar .sidebar-toggle:hover{
-          background-color: #ff69b4;
-          }
-
-          /* body */
-          .content-wrapper, .right-side {
-          background-color: #000005;
-          }
-          
-          #Movies{
-            font-size: 32px;
-          }'
-        )
-      )
-    ), #end tags
+    # #Changing how the webpage looks
+    # tags$head(
+    #   tags$style(
+    #     HTML(
+    #       '/* logo */
+    #       .skin-blue .main-header .logo {
+    #       background-color: #2b2bfc;
+    #       }
+    # 
+    #       /* logo when hovered */
+    #       .skin-blue .main-header .logo:hover {
+    #       background-color: #2b2bfc;
+    #       }
+    # 
+    #       /* navbar (rest of the header) */
+    #       .skin-blue .main-header .navbar {
+    #       background-color: #2b2bfc;
+    #       }
+    # 
+    #       /* main sidebar */
+    #       .skin-blue .main-sidebar {
+    #       background-color: #2b2bfc;
+    #       }
+    # 
+    #       /* active selected tab in the sidebarmenu */
+    #       .skin-blue .main-sidebar .sidebar .sidebar-menu .active a{
+    #       background-color: #ff0000;
+    #       }
+    # 
+    #       /* other links in the sidebarmenu */
+    #       .skin-blue .main-sidebar .sidebar .sidebar-menu a{
+    #       background-color: #00ff00;
+    #       color: #000000;
+    #       }
+    # 
+    #       /* other links in the sidebarmenu when hovered */
+    #       .skin-blue .main-sidebar .sidebar .sidebar-menu a:hover{
+    #       background-color: #ff69b4;
+    #       }
+    #       /* toggle button when hovered  */
+    #       .skin-blue .main-header .navbar .sidebar-toggle:hover{
+    #       background-color: #ff69b4;
+    #       }
+    # 
+    #       /* body */
+    #       .content-wrapper, .right-side {
+    #       background-color: #000005;
+    #       }
+    #       
+    #       #Movies{
+    #         font-size: 32px;
+    #       }'
+    #     )
+    #   )
+    # ), #end tags
   
     fluidRow(
       box(width = 12, status = "primary", title = "Filter By", solidHeader = TRUE,
@@ -190,6 +233,30 @@ ui <- dashboardPage(
 
 #begin server
 server <- function(input, output) {
+  
+  output$avgYear <- renderInfoBox({
+    infoBox(
+      "Average Films Released Per Year",
+      paste0(sprintf("%0.2f", avgPerYear), " Films"),
+      icon = icon("calendar"),
+    )
+  })
+  
+  output$avgMonth <- renderInfoBox({
+    infoBox(
+      "Average Films Released Per Month",
+      paste0(sprintf("%0.2f", avgPerMonth), " Films"),
+      icon = icon("calendar-alt")
+    )
+  })
+  
+  output$avgRuntime <- renderInfoBox({
+    infoBox(
+      "Average Runtime of Films",
+      paste0(sprintf("%0.2f", avgByRuntime), " Minutes"),
+      icon = icon("clock")
+    )
+  })
   
   filteredKeywords <- reactive({
     #new dataframe consisting of top n results from dataframe
