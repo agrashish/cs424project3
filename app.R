@@ -462,31 +462,56 @@ server <- function(input, output) {
   })
   
   output$MoviesPerRuntimeChart <- renderPlot({
-    df1 <- overallData[,c("Running.Time", "set")]
-    df1 <- data.frame(table(df1["Running.Time"]))
-    colnames(df1) <- c("Running.Time", "Freq")
-    df1["set"] <- "All"
-    df2 <- uniquedata()[,c("Running.Time", "set")]
-    df2 <- data.frame(table(df2["Running.Time"]))
-    colnames(df2) <- c("Running.Time", "Freq")
-    df2["set"] <- "Filtered"
-    df <- rbind(df1, df2)
-    #amount of movies per runtime
-    ggplot(df) +
-      aes(x = Running.Time, y = Freq, fill = set) +
-      geom_col(position = "dodge") +
-      labs(title="Distribution of Movie Runtimes",caption="source: Running Time") +
-      labs(x = "Runtime (in minutes)", y = "Count") +
-      theme(axis.text.x = element_text(angle=90, vjust=0.6))
+    if(isFiltered()) {
+      df1 <- overallData[,c("Running.Time", "set")]
+      df1 <- data.frame(table(df1["Running.Time"]))
+      colnames(df1) <- c("Running.Time", "Freq")
+      df1["set"] <- "All"
+      df2 <- uniquedata()[,c("Running.Time", "set")]
+      df2 <- data.frame(table(df2["Running.Time"]))
+      colnames(df2) <- c("Running.Time", "Freq")
+      df2["set"] <- "Filtered"
+      df <- rbind(df1, df2)
+      #amount of movies per runtime
+      ggplot(df) +
+        aes(x = Running.Time, y = Freq, fill = set) +
+        geom_col(position = "dodge") +
+        labs(title="Distribution of Movie Runtimes",caption="source: Running Time") +
+        labs(x = "Runtime (in minutes)", y = "Count") +
+        theme(axis.text.x = element_text(angle=90, vjust=0.6))
+    }
+    else {
+      #amount of movies per runtime
+      ggplot(data()) +
+        aes(x = factor(data()$Running.Time)) +
+        geom_bar( fill="tomato3") +
+        labs(title="Distribution of Movie Runtimes",caption="source: Running Time") +
+        labs(x = "Runtime (in minutes)", y = "Count") +
+        theme(axis.text.x = element_text(angle=90, vjust=0.6))
+    }
   })
   
   output$MoviesPerRunTimeTable = DT::renderDataTable({
-    #table for movies per runtime
-    runtimeTable <- as.data.frame(table(data()$Running.Time))
-    names(runtimeTable)[names(runtimeTable) == "Var1"] <- "Runtime (in minutes)"
-    runtimeTable <- runtimeTable[rev(order(runtimeTable$Freq)),]
-    row.names(runtimeTable) <- NULL
-    runtimeTable
+    if(isFiltered()) {
+      df1 <- overallData[,c("Running.Time", "set")]
+      df1 <- data.frame(table(df1["Running.Time"]))
+      colnames(df1) <- c("Running.Time", "Freq")
+      df1["set"] <- "All"
+      df2 <- uniquedata()[,c("Running.Time", "set")]
+      df2 <- data.frame(table(df2["Running.Time"]))
+      colnames(df2) <- c("Running.Time", "Freq")
+      df2["set"] <- "Filtered"
+      df <- rbind(df1, df2)
+      df
+    }
+    else {
+      #table for movies per runtime
+      runtimeTable <- as.data.frame(table(data()$Running.Time))
+      names(runtimeTable)[names(runtimeTable) == "Var1"] <- "Runtime (in minutes)"
+      runtimeTable <- runtimeTable[rev(order(runtimeTable$Freq)),]
+      row.names(runtimeTable) <- NULL
+      runtimeTable
+    }
   })
   
   output$MoviesPerGenreChart <- renderPlot({
