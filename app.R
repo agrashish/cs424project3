@@ -82,6 +82,12 @@ ui <- dashboardPage(
         h4("Libraries:"), p("shiny,shinydashboard,ggplot2"),
         h4("Data Source:"), p("IMDB"), tags$p(tags$a(href = "ftp://ftp.fu-berlin.de/pub/misc/movies/database/frozendata/", "fu-berlin.de"))
       ),
+      menuItem("Movies that Meet the Criteria", tabName = "blanks"),
+      menuItem(infoBoxOutput("criteriaMov")),
+      menuItem("", tabName = "blanks"),
+      menuItem("", tabName = "blanks"),
+      menuItem("", tabName = "blanks"),
+      menuItem("", tabName = "blanks"),
       menuItem("Average Films Released Per Year", tabName = "blanks"),
       menuItem(infoBoxOutput("avgYear")),
       menuItem("", tabName = "blanks"),
@@ -170,9 +176,6 @@ ui <- dashboardPage(
       )
     ), #end fluidRow
     fluidRow(
-      box(width = 2, title = "Movies that meet the criteria", status = "primary", solidHeader = TRUE, textOutput("Movies"))
-    ), #end fluidRow
-    fluidRow(
       box(width = 12,
         mainPanel(width = 12, 
           tabsetPanel(
@@ -258,6 +261,15 @@ server <- function(input, output) {
     )
   })
   
+  #Output text for the movies that meet the criteria
+  output$criteriaMov <- renderInfoBox({
+    infoBox(
+      "Movies that Meet the Criteria",
+      paste0(nrow(data()), " Films"),
+      icon = icon("filter")
+    )
+  })
+  
   filteredKeywords <- reactive({
     #new dataframe consisting of top n results from dataframe
     filteredKeywords <- keywords[1:input$pickFilter,]
@@ -321,11 +333,6 @@ server <- function(input, output) {
     names(top10)[names(top10) == "Var3"] <- "Year"
     top10 <- head(top10, n = 10)
     top10
-  })
-  
-  #Output text for the movies that meet the criteria
-  output$Movies <- renderText({
-    nrow(data())
   })
   
   output$MoviesPerYearChart <- renderPlot({
