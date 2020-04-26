@@ -69,6 +69,9 @@ names(keywords)[names(keywords) == "Var1"] <- "Keyword"
 keywords <- keywords[rev(order(keywords$Freq)),]
 row.names(keywords) <- NULL
 
+#create set column, so that we can make comparison bar graphs
+overallData["set"] = "All"
+
 
 # begin ui
 ui <- dashboardPage(
@@ -265,7 +268,7 @@ server <- function(input, output) {
   output$criteriaMov <- renderInfoBox({
     infoBox(
       "Movies that Meet the Criteria",
-      paste0(nrow(data()), " Films"),
+      paste0(nrow(uniquedata()), " Films"),
       icon = icon("filter")
     )
   })
@@ -279,49 +282,55 @@ server <- function(input, output) {
   
   #Reactive Function that changes the dataframe based on the filter the user picks
   data <- reactive({
+    overallData2 <- rawdata
     if(input$GenrePick == "All"){
-      overallData
+      
     }
     else{
-      overallData <- overallData[overallData$Genre == input$GenrePick,]
+      overallData2 <- overallData2[overallData2$Genre == input$GenrePick,]
     }
     
     if(input$KeywordPick == "All"){
-      overallData
+      
     }
     else{
-      overallData <- overallData[overallData$Keyword == input$KeywordPick,]
+      overallData2 <- overallData2[overallData2$Keyword == input$KeywordPick,]
     }
     
     if(input$CertificatePick == "All"){
-      overallData
+      
     }
     else{
-      overallData <- overallData[overallData$Certificate == input$CertificatePick,]
+      overallData2 <- overallData2[overallData2$Certificate == input$CertificatePick,]
     }
     
     if(input$RunningTimePick == "All"){
-      overallData
+      
     }
     else{
-      overallData <- overallData[overallData$Running.Time == input$RunningTimePick,]
+      overallData2 <- overallData2[overallData2$Running.Time == input$RunningTimePick,]
     }
     
     if(input$YearPick == "All"){
-      overallData
+      
     }
     else{
-      overallData <- overallData[overallData$Year == input$YearPick,]
+      overallData2 <- overallData2[overallData2$Year == input$YearPick,]
     }
     
     if(input$DecadePick == "All"){
-      overallData
+      
     }
     else{
-      overallData <- overallData[overallData$Decade == input$DecadePick,]
+      overallData2 <- overallData2[overallData2$Decade == input$DecadePick,]
     }
-    
-    overallData
+    overallData2["set"] <- "Filtered"
+    overallData2
+  })
+  
+  uniquedata <- reactive({
+    uniquedata <- data()[!duplicated(data()["Title"]),]
+    uniquedata
   })
   
   #Output the list of the top 10 movies based on rating that meet the criteria
@@ -354,7 +363,7 @@ server <- function(input, output) {
   output$MoviesPerMonthChart <- renderPlot({
     #amount of movies per year
     ggplot(data()) +
-      aes(x = data()$Month) +
+      aes(x = data()$Month, fill="set") +
       geom_bar( fill="tomato3") +
       labs(title="Number of Movies Released per Month",caption="source: Month") +
       labs(x = "Month", y = "Count") +
