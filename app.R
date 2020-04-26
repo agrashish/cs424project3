@@ -83,9 +83,9 @@ ui <- dashboardPage(
     sidebarMenu(
       menuItem("Dashboard", tabName ="dashboard", icon = icon("dashboard")),
       menuItem("About",tabName = "til", startExpanded = F, icon = icon("question"),
-               h4("Coded By:"), p("Ivan M., Richard M., Aashish A."), 
-               h4("Libraries:"), p("shiny,shinydashboard,ggplot2"),
-               h4("Data Source:"), p("IMDB"), tags$p(tags$a(href = "ftp://ftp.fu-berlin.de/pub/misc/movies/database/frozendata/", "fu-berlin.de"))
+        h4("Coded By:"), p("Ivan M., Richard M., Aashish A."), 
+        h4("Libraries:"), p("shiny,shinydashboard,ggplot2"),
+        h4("Data Source:"), p("IMDB"), tags$p(tags$a(href = "ftp://ftp.fu-berlin.de/pub/misc/movies/database/frozendata/", "fu-berlin.de"))
       ),
       menuItem("Movies that Meet the Criteria", tabName = "blanks"),
       menuItem(infoBoxOutput("criteriaMov")),
@@ -110,7 +110,6 @@ ui <- dashboardPage(
     )
   ),
   dashboardBody(
-    
     # #Changing how the webpage looks
     # tags$head(
     #   tags$style(
@@ -167,75 +166,75 @@ ui <- dashboardPage(
     #   )
     # ), #end tags
     
-    fluidRow(
-      box(width = 12, status = "primary", title = "Filter By", solidHeader = TRUE,
-          column(4, box(title = "Select the Genre to filter by", selectInput("GenrePick", "Select Genre", choices = c("All", unique(as.character(overallData$Genres))))),
-                 box(title = "Select the Keyword to filter by", selectInput("KeywordPick", "Select Keyword", choices = c("All", unique(as.character(overallData$Keyword)))))
-          ), #end column
-          column(4, box(title = "Select the Certificate to filter by", selectInput("CertificatePick", "Select Certificate", choices = c("All", unique(as.character(overallData$Certificate))))),
-                 box(title = "Select the Running Time to filter by", selectInput("RunningTimePick", "Select Running Time", choices = c("All", unique(overallData$Running.Time))))
-          ), #end column
-          column(4, box(title = "Select the Year to filter by", selectInput("YearPick", "Select Year", choices = c("All", unique(overallData$Year2)))),
-                 box(title = "Select the Decade to filter by", selectInput("DecadePick", "Select Decade", choices = c("All", unique(overallData$Decade))))
-          ) #end column
-      )
-    ), #end fluidRow
-    fluidRow(
-      box(width = 12,
-          mainPanel(width = 12, 
-                    tabsetPanel(
-                      tabPanel("Movies per Year",      
-                               ##chart
-                               box( width = 12, status = "primary", solidHeader = TRUE, plotOutput("MoviesPerYearChart", height = 360)),
-                               ##table
-                               box( width = 12, status = "primary", solidHeader = TRUE, DT::dataTableOutput("MoviesPerYearTable", height = 360))
-                      ),
-                      tabPanel("Movies per Month",      
-                               ##chart
-                               box( width = 12, status = "primary", solidHeader = TRUE, plotOutput("MoviesPerMonthChart", height = 360)),
-                               ##table
-                               box( width = 12, status = "primary", solidHeader = TRUE, DT::dataTableOutput("MoviesPerMonthTable", height = 360))
-                      ),
-                      tabPanel("Movies per Runtime",
-                               ##chart
-                               box( width = 12, status = "primary", solidHeader = TRUE, plotOutput("MoviesPerRuntimeChart", height = 360)),
-                               ##table
-                               box( width = 12, status = "primary", solidHeader = TRUE, DT::dataTableOutput("MoviesPerRunTimeTable", height = 360))
-                      ),
-                      tabPanel("Movies per Genre",
-                               ##chart
-                               box( width = 12, status = "primary", solidHeader = TRUE, plotOutput("MoviesPerGenreChart", height = 360)),
-                               ##table
-                               box( width = 12, status = "primary", solidHeader = TRUE, DT::dataTableOutput("MoviesPerGenreTable", height = 360))
-                      ),
-                      tabPanel("Movies per Certificate",
-                               ##chart
-                               box( width = 12, status = "primary", solidHeader = TRUE, plotOutput("MoviesPerCertificateChart", height = 360)),
-                               ##table
-                               box( width = 12, status = "primary", solidHeader = TRUE, DT::dataTableOutput("MoviesPerCertificateTable", height = 360))
-                      ),
-                      tabPanel("Movie Top N Keywords",
-                               ##slider picker for top n
-                               box(
-                                 sliderInput("pickFilter", "Pick N", 1, 50, 10)),
-                               ##chart
-                               box( width = 12, status = "primary", solidHeader = TRUE, plotOutput("MovieKeywordsChart", height = 420)),
-                               ##table
-                               box( width = 12, status = "primary", solidHeader = TRUE, DT::dataTableOutput("MovieKeywordsTable", height = 360))
-                      ),
-                      tabPanel("Runtime of each Genre",      
-                               ##chart
-                               box( width = 12, status = "primary", solidHeader = TRUE, plotOutput("RuntimeGenrePlot", height = 360)),
-                               ##table
-                               box( width = 12, status = "primary", solidHeader = TRUE, DT::dataTableOutput("RuntimeGenreTable", height = 360))
-                      )
-                    ) # end tabsetpanel
-          ) # end mainpanel
-      ) # end box
-    ),#end fluidrow
-    fluidRow(
-      box( width = 12, title = "Top 10 per rating", status = "primary", solidHeader = TRUE, DT::dataTableOutput("Top10", height = 360))
+  fluidRow(
+    box(width = 12, status = "primary", title = "Filter By", solidHeader = TRUE,
+      column(4, box(title = "Select the Genre to filter by", selectInput("GenrePick", "Select Genre", choices = c("All", unique(as.character(overallData$Genres))))),
+        box(title = "Select the Keyword to filter by", selectInput("KeywordPick", "Select Keyword", choices = c("All", unique(as.character(overallData$Keyword)))))
+      ), #end column
+      column(4, box(title = "Select the Certificate to filter by", selectInput("CertificatePick", "Select Certificate", choices = c("All", unique(as.character(overallData$Certificate))))),
+        box(title = "Select the Running Time to filter by", selectInput("RunningTimePick", "Select Running Time", choices = c("All", unique(overallData$Running.Time))))
+      ), #end column
+      column(4, box(title = "Select the Year to filter by", selectInput("YearPick", "Select Year", choices = c("All", unique(overallData$Year2)))),
+        box(title = "Select the Decade to filter by", selectInput("DecadePick", "Select Decade", choices = c("All", unique(overallData$Decade))))
+      ) #end column
     )
+  ), #end fluidRow
+  fluidRow(
+    box(width = 12,
+      mainPanel(width = 12, 
+        tabsetPanel(
+          tabPanel("Movies per Year",      
+            ##chart
+            box( width = 12, status = "primary", solidHeader = TRUE, plotOutput("MoviesPerYearChart", height = 360)),
+            ##table
+            box( width = 12, status = "primary", solidHeader = TRUE, DT::dataTableOutput("MoviesPerYearTable", height = 360))
+          ),
+          tabPanel("Movies per Month",      
+            ##chart
+            box( width = 12, status = "primary", solidHeader = TRUE, plotOutput("MoviesPerMonthChart", height = 360)),
+            ##table
+            box( width = 12, status = "primary", solidHeader = TRUE, DT::dataTableOutput("MoviesPerMonthTable", height = 360))
+          ),
+          tabPanel("Movies per Runtime",
+            ##chart
+            box( width = 12, status = "primary", solidHeader = TRUE, plotOutput("MoviesPerRuntimeChart", height = 360)),
+            ##table
+            box( width = 12, status = "primary", solidHeader = TRUE, DT::dataTableOutput("MoviesPerRunTimeTable", height = 360))
+          ),
+          tabPanel("Movies per Genre",
+            ##chart
+            box( width = 12, status = "primary", solidHeader = TRUE, plotOutput("MoviesPerGenreChart", height = 360)),
+            ##table
+            box( width = 12, status = "primary", solidHeader = TRUE, DT::dataTableOutput("MoviesPerGenreTable", height = 360))
+          ),
+          tabPanel("Movies per Certificate",
+            ##chart
+            box( width = 12, status = "primary", solidHeader = TRUE, plotOutput("MoviesPerCertificateChart", height = 360)),
+            ##table
+            box( width = 12, status = "primary", solidHeader = TRUE, DT::dataTableOutput("MoviesPerCertificateTable", height = 360))
+          ),
+          tabPanel("Movie Top N Keywords",
+            ##slider picker for top n
+            box(
+            sliderInput("pickFilter", "Pick N", 1, 50, 10)),
+            ##chart
+            box( width = 12, status = "primary", solidHeader = TRUE, plotOutput("MovieKeywordsChart", height = 420)),
+            ##table
+            box( width = 12, status = "primary", solidHeader = TRUE, DT::dataTableOutput("MovieKeywordsTable", height = 360))
+          ),
+          tabPanel("Runtime of each Genre",      
+            ##chart
+            box( width = 12, status = "primary", solidHeader = TRUE, plotOutput("RuntimeGenrePlot", height = 360)),
+            ##table
+            box( width = 12, status = "primary", solidHeader = TRUE, DT::dataTableOutput("RuntimeGenreTable", height = 360))
+          )
+        ) # end tabsetpanel
+      ) # end mainpanel
+    ) # end box
+  ),#end fluidrow
+  fluidRow(
+    box( width = 12, title = "Top 10 per rating", status = "primary", solidHeader = TRUE, DT::dataTableOutput("Top10", height = 360))
+  )
   )##end dashboardBody
 )##end dashboardPage
 
@@ -335,6 +334,20 @@ server <- function(input, output) {
     uniquedata
   })
   
+  isFiltered <- reactive({
+    if(input$GenrePick == "All" 
+       && input$KeywordPick == "All" 
+       && input$CertificatePick == "All" 
+       && input$RunningTimePick == "All" 
+       && input$YearPick == "All" 
+       && input$DecadePick == "All") {
+      FALSE
+    }
+    else {
+      TRUE
+    }
+  })
+  
   #Output the list of the top 10 movies based on rating that meet the criteria
   output$Top10 <- DT::renderDataTable({
     top10 <- data()
@@ -346,53 +359,122 @@ server <- function(input, output) {
   })
   
   output$MoviesPerYearChart <- renderPlot({
-    #amount of movies per year
-    ggplot(data()) +
-      aes(x = data()$Year) +
-      geom_bar( fill="tomato3") +
-      labs(title="Number of Movies Released per Year",caption="source: Year") +
-      labs(x = "Year", y = "Count") +
-      theme(axis.text.x = element_text(angle=65, vjust=0.6))
+    if(isFiltered()) {
+      df1 <- overallData[,c("Year", "set")]
+      df1 <- data.frame(table(df1["Year"]))
+      colnames(df1) <- c("Year", "Freq")
+      df1["set"] <- "All"
+      df2 <- uniquedata()[,c("Year", "set")]
+      df2 <- data.frame(table(df2["Year"]))
+      colnames(df2) <- c("Year", "Freq")
+      df2["set"] <- "Filtered"
+      df <- rbind(df1, df2)
+      
+      #amount of movies per year
+      ggplot(df) +
+        aes(x = Year, y = Freq, fill = set) +
+        geom_col(position = "dodge") +
+        labs(title="Number of Movies Released per Year",caption="source: Year") +
+        labs(x = "Year", y = "Count") +
+        theme(axis.text.x = element_text(angle=65, vjust=0.6))
+    }
+    else {
+      #amount of movies per year
+      ggplot(data()) +
+        aes(x = data()$Year) +
+        geom_bar( fill="tomato3") +
+        labs(title="Number of Movies Released per Year",caption="source: Year") +
+        labs(x = "Year", y = "Count") +
+        theme(axis.text.x = element_text(angle=65, vjust=0.6))
+    }
   })
   
   output$MoviesPerYearTable = DT::renderDataTable({
-    #table for movies per year,full data unique titles set(no duplicates of same movie)
-    movieYearTable <- as.data.frame(table(data()$Year))
-    names(movieYearTable)[names(movieYearTable) == "Var1"] <- "Year"
-    movieYearTable
+    if(isFiltered()) {
+      df1 <- overallData[,c("Year", "set")]
+      df1 <- data.frame(table(df1["Year"]))
+      colnames(df1) <- c("Year", "Freq")
+      df1["set"] <- "All"
+      df2 <- uniquedata()[,c("Year", "set")]
+      df2 <- data.frame(table(df2["Year"]))
+      colnames(df2) <- c("Year", "Freq")
+      df2["set"] <- "Filtered"
+      df <- rbind(df1, df2)
+      df
+    }
+    else {
+      #table for movies per year,full data unique titles set(no duplicates of same movie)
+      movieYearTable <- as.data.frame(table(data()$Year))
+      names(movieYearTable)[names(movieYearTable) == "Var1"] <- "Year"
+      movieYearTable
+    }
   })
   
   output$MoviesPerMonthChart <- renderPlot({
-    df1 <- overallData[,c("Month", "set")]
-    monthdf1 <- data.frame(table(df1["Month"]))
-    colnames(monthdf1) <- c("Month", "Freq")
-    monthdf1["set"] <- "All"
-    df2 <- uniquedata()[,c("Month", "set")]
-    monthdf2 <- data.frame(table(df2["Month"]))
-    colnames(monthdf2) <- c("Month", "Freq")
-    monthdf2["set"] <- "Filtered"
-    df <- rbind(monthdf1, monthdf2)
-    #amount of movies per year
-    ggplot(df) +
-      aes(x = Month, y = Freq, fill = set) +
-      geom_col(position = "dodge") +
-      labs(title="Number of Movies Released per Month",caption="source: Month") +
-      labs(x = "Month", y = "Count") +
-      theme(axis.text.x = element_text(angle=65, vjust=0.6))
+    if(isFiltered()) {
+      df1 <- overallData[,c("Month", "set")]
+      df1 <- data.frame(table(df1["Month"]))
+      colnames(df1) <- c("Month", "Freq")
+      df1["set"] <- "All"
+      df2 <- uniquedata()[,c("Month", "set")]
+      df2 <- data.frame(table(df2["Month"]))
+      colnames(df2) <- c("Month", "Freq")
+      df2["set"] <- "Filtered"
+      df <- rbind(df1, df2)
+      #amount of movies per year
+      ggplot(df) +
+        aes(x = Month, y = Freq, fill = set) +
+        geom_col(position = "dodge") +
+        labs(title="Number of Movies Released per Month",caption="source: Month") +
+        labs(x = "Month", y = "Count") +
+        theme(axis.text.x = element_text(angle=65, vjust=0.6))
+    }
+    else {
+      #amount of movies per year
+      ggplot(data()) +
+        aes(x = data()$Month) +
+        geom_bar( fill="tomato3") +
+        labs(title="Number of Movies Released per Month",caption="source: Month") +
+        labs(x = "Month", y = "Count") +
+        theme(axis.text.x = element_text(angle=65, vjust=0.6))
+    }
   })
   
   output$MoviesPerMonthTable = DT::renderDataTable({
-    #table for movies per month,full data unique titles set(no duplicates of same movie)
-    movieMonthTable <- as.data.frame(table(data()$Month))
-    names(movieMonthTable)[names(movieMonthTable) == "Var1"] <- "Month"
-    movieMonthTable
+    if(isFiltered()) {
+      df1 <- overallData[,c("Month", "set")]
+      df1 <- data.frame(table(df1["Month"]))
+      colnames(df1) <- c("Month", "Freq")
+      df1["set"] <- "All"
+      df2 <- uniquedata()[,c("Month", "set")]
+      df2 <- data.frame(table(df2["Month"]))
+      colnames(df2) <- c("Month", "Freq")
+      df2["set"] <- "Filtered"
+      df <- rbind(df1, df2)
+      df
+    }
+    else {
+      #table for movies per month,full data unique titles set(no duplicates of same movie)
+      movieMonthTable <- as.data.frame(table(data()$Month))
+      names(movieMonthTable)[names(movieMonthTable) == "Var1"] <- "Month"
+      movieMonthTable
+    }
   })
   
   output$MoviesPerRuntimeChart <- renderPlot({
+    df1 <- overallData[,c("Running.Time", "set")]
+    df1 <- data.frame(table(df1["Running.Time"]))
+    colnames(df1) <- c("Running.Time", "Freq")
+    df1["set"] <- "All"
+    df2 <- uniquedata()[,c("Running.Time", "set")]
+    df2 <- data.frame(table(df2["Running.Time"]))
+    colnames(df2) <- c("Running.Time", "Freq")
+    df2["set"] <- "Filtered"
+    df <- rbind(df1, df2)
     #amount of movies per runtime
-    ggplot(data()) +
-      aes(x = factor(data()$Running.Time)) +
-      geom_bar( fill="tomato3") +
+    ggplot(df) +
+      aes(x = Running.Time, y = Freq, fill = set) +
+      geom_col(position = "dodge") +
       labs(title="Distribution of Movie Runtimes",caption="source: Running Time") +
       labs(x = "Runtime (in minutes)", y = "Count") +
       theme(axis.text.x = element_text(angle=90, vjust=0.6))
@@ -408,9 +490,19 @@ server <- function(input, output) {
   })
   
   output$MoviesPerGenreChart <- renderPlot({
+    df1 <- rawdata[,c("Genres", "set")]
+    df1 <- data.frame(table(df1["Genres"]))
+    colnames(df1) <- c("Genres", "Freq")
+    df1["set"] <- "All"
+    df2 <- data()[,c("Genres", "set")]
+    df2 <- data.frame(table(df2["Genres"]))
+    colnames(df2) <- c("Genres", "Freq")
+    df2["set"] <- "Filtered"
+    df <- rbind(df1, df2)
     #amount of movies per Genre
-    ggplot(data(), aes(x=factor(data()$Genres))) +
-      geom_bar( width=.5, fill="tomato3") +
+    ggplot(df) +
+      aes(x = Genres, y = Freq, fill = set) +
+      geom_col(position = "dodge") +
       labs(title="Number of Movies per Genre", caption="source: Genres") +
       labs(x = "Genre", y = "Count") +
       theme(axis.text.x = element_text(angle=65, vjust=0.6))
