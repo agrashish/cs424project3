@@ -326,12 +326,11 @@ server <- function(input, output) {
   
   #Output the list of the top 10 movies based on rating that meet the criteria
   output$Top10 <- DT::renderDataTable({
-    top10 <- data()[rev(order(data()$Rating)),]
-    top10 <- as.data.frame(table(top10$Title, top10$Rating, top10$Year))
-    names(top10)[names(top10) == "Var1"] <- "Title"
-    names(top10)[names(top10) == "Var2"] <- "Rating"
-    names(top10)[names(top10) == "Var3"] <- "Year"
-    top10 <- head(top10, n = 10)
+    top10 <- data()
+    top10 <- top10[rev(order(top10$Rating)),]
+    top10 <- top10[,c("Title", "Rating", "Year")]
+    rownames(top10) <- NULL
+    top10 <- head(top10, 10)
     top10
   })
   
