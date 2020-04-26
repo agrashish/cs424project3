@@ -13,20 +13,12 @@ library(leaflet)
 #read in data from csv 
 #(use rawdata and save into a new dataframe for your stuff ex: variableName <- rawdata)
 rawdata <- read.csv(file = "movies_data.csv")
-
 #overallData is used for our overall plots
 #overallData only has unique titles (so one row for each movie)
 overallData <- rawdata
-#order by year
 overallData <- rawdata[order(rawdata$Year),]
-#remove duplicates
 overallData <- overallData[!duplicated(overallData["Title"]),]
-#make years as factors (for our plots)
-overallData$Year <- factor(overallData$Year)
-
-#convert release date to character (so we can pull month from it)
 overallData$Release.Date <- as.character(overallData$Release.Date)
-#pull month from release date
 overallData$Month <- sapply(strsplit(overallData$Release.Date, " "), function(x) {
   if (length(x) == 2) {
     x[1]
@@ -35,26 +27,12 @@ overallData$Month <- sapply(strsplit(overallData$Release.Date, " "), function(x)
     x[2]
   }
 })
-#month vector
 months = c("January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December")
-#use month vector to factor Month column in right order
 overallData$Month <- factor(overallData$Month, levels = months)
-
-#counter column, so we can get averages
-overallData["Counter"] = 1
-
-#get the sums of each year unique movie title occurences
-sums <- aggregate(overallData[, "Counter"], list(overallData$Year),sum)
-#get average number of films released per year
-avgPerYear <- sum(sums["x"]) / nrow(sums)
-
-#get the sums of each year + month unique movie title occurences
-sums <- aggregate(overallData[, "Counter"], list(overallData$Year, overallData$Month),sum)
-#get average number of films released per month
-avgPerMonth <- sum(sums["x"]) / nrow(sums)
-
-#get average movie runtime
-avgByRuntime <- mean(overallData$Running.Time)
+overallData$Decade <- as.character(overallData$Year)
+substr(overallData$Decade,start=4, stop=4) <- "0"
+overallData$Year2 <-overallData$Year
+overallData$Year <- factor(overallData$Year)
 
 #dataframe for keywords
 keywords <- as.data.frame(table(rawdata$Keyword))
@@ -70,28 +48,87 @@ ui <- dashboardPage(
     width = 300,
     sidebarMenu(
       menuItem("Dashboard", tabName ="dashboard", icon = icon("dashboard")),
-      menuItem("About",tabName = "til", startExpanded = F, icon = icon("question"),
+      menuItem("About",tabName = "til", startExpanded = F,
         h4("Coded By:"), p("Ivan M., Richard M., Aashish A."), 
         h4("Libraries:"), p("shiny,shinydashboard,ggplot2"),
         h4("Data Source:"), p("IMDB"), tags$p(tags$a(href = "ftp://ftp.fu-berlin.de/pub/misc/movies/database/frozendata/", "fu-berlin.de"))
-      ),
-      menuItem("Average Films Released Per Year", tabName = "blanks"),
-      menuItem(infoBoxOutput("avgYear")),
-      menuItem("", tabName = "blanks"),
-      menuItem("", tabName = "blanks"),
-      menuItem("", tabName = "blanks"),
-      menuItem("", tabName = "blanks"),
-      menuItem("Average Films Released Per Month", tabName = "blanks"),
-      menuItem(infoBoxOutput("avgMonth")),
-      menuItem("", tabName = "blanks"),
-      menuItem("", tabName = "blanks"),
-      menuItem("", tabName = "blanks"),
-      menuItem("", tabName = "blanks"),
-      menuItem("Average Runtime of Films", tabName = "blanks"),
-      menuItem(infoBoxOutput("avgRuntime"))
+      )
     )
   ),
   dashboardBody(
+    
+    #Changing how the webpage looks
+    tags$head(
+      tags$style(
+        HTML(
+          '/* logo */
+          .skin-blue .main-header .logo {
+          background-color: #2b2bfc;
+          }
+
+          /* logo when hovered */
+          .skin-blue .main-header .logo:hover {
+          background-color: #2b2bfc;
+          }
+
+          /* navbar (rest of the header) */
+          .skin-blue .main-header .navbar {
+          background-color: #2b2bfc;
+          }
+
+          /* main sidebar */
+          .skin-blue .main-sidebar {
+          background-color: #2b2bfc;
+          }
+
+          /* active selected tab in the sidebarmenu */
+          .skin-blue .main-sidebar .sidebar .sidebar-menu .active a{
+          background-color: #ff0000;
+          }
+
+          /* other links in the sidebarmenu */
+          .skin-blue .main-sidebar .sidebar .sidebar-menu a{
+          background-color: #00ff00;
+          color: #000000;
+          }
+
+          /* other links in the sidebarmenu when hovered */
+          .skin-blue .main-sidebar .sidebar .sidebar-menu a:hover{
+          background-color: #ff69b4;
+          }
+          /* toggle button when hovered  */
+          .skin-blue .main-header .navbar .sidebar-toggle:hover{
+          background-color: #ff69b4;
+          }
+
+          /* body */
+          .content-wrapper, .right-side {
+          background-color: #000005;
+          }
+          
+          #Movies{
+            font-size: 32px;
+          }'
+        )
+      )
+    ), #end tags
+  
+    fluidRow(
+      box(width = 12, status = "primary", title = "Filter By", solidHeader = TRUE,
+          column(4, box(wdith = 2,title = "Select the Genre to filter by", selectInput("GenrePick", "Select Genre", choices = c("All", unique(overallData$Genre)))),
+                    box(wdith = 2,title = "Select the Keyword to filter by", selectInput("KeywordPick", "Select Keyword", choices = c("All", unique(overallData$Keyword))))
+          ), #end column
+          column(4, box(wdith = 2,title = "Select the Certificate to filter by", selectInput("CertificatePick", "Select Certificate", choices = c("All", unique(overallData$Certificate)))),
+                    box(wdith = 2,title = "Select the Running Time to filter by", selectInput("RunningTimePick", "Select Running Time", choices = c("All", unique(overallData$Running.Time))))
+          ), #end column
+          column(4, box(wdith = 2,title = "Select the Year to filter by", selectInput("YearPick", "Select Year", choices = c("All", unique(overallData$Year2)))),
+                    box(wdith = 2,title = "Select the Decade to filter by", selectInput("DecadePick", "Select Decade", choices = c("All", unique(overallData$Decade))))
+          ) #end column
+      )
+    ), #end fluidRow
+    fluidRow(
+      box(width = 2, title = "Movies that meet the criteria", status = "primary", solidHeader = TRUE, textOutput("Movies"))
+    ), #end fluidRow
     fluidRow(
       box(width = 12,
         mainPanel(width = 12, 
@@ -144,36 +181,15 @@ ui <- dashboardPage(
           ) # end tabsetpanel
         ) # end mainpanel
       ) # end box
-    )#end fluidrow
+    ),#end fluidrow
+    fluidRow(
+      box( width = 12, title = "Top 10 per rating", status = "primary", solidHeader = TRUE, DT::dataTableOutput("Top10", height = 360))
+    )
   )##end dashboardBody
 )##end dashboardPage
 
 #begin server
 server <- function(input, output) {
-  
-  output$avgYear <- renderInfoBox({
-    infoBox(
-      "Average Films Released Per Year",
-      paste0(sprintf("%0.2f", avgPerYear), " Films"),
-      icon = icon("calendar"),
-    )
-  })
-  
-  output$avgMonth <- renderInfoBox({
-    infoBox(
-      "Average Films Released Per Month",
-      paste0(sprintf("%0.2f", avgPerMonth), " Films"),
-      icon = icon("calendar-alt")
-    )
-  })
-  
-  output$avgRuntime <- renderInfoBox({
-    infoBox(
-      "Average Runtime of Films",
-      paste0(sprintf("%0.2f", avgByRuntime), " Minutes"),
-      icon = icon("clock")
-    )
-  })
   
   filteredKeywords <- reactive({
     #new dataframe consisting of top n results from dataframe
@@ -182,10 +198,73 @@ server <- function(input, output) {
     filteredKeywords
   })
   
+  #Reactive Function that changes the dataframe based on the filter the user picks
+  data <- reactive({
+    if(input$GenrePick == "All"){
+      overallData
+    }
+    else{
+      overallData <- overallData[overallData$Genre == input$GenrePick,]
+    }
+    
+    if(input$KeywordPick == "All"){
+      overallData
+    }
+    else{
+      overallData <- overallData[overallData$Keyword == input$KeywordPick,]
+    }
+    
+    if(input$CertificatePick == "All"){
+      overallData
+    }
+    else{
+      overallData <- overallData[overallData$Certificate == input$CertificatePick,]
+    }
+    
+    if(input$RunningTimePick == "All"){
+      overallData
+    }
+    else{
+      overallData <- overallData[overallData$Running.Time == input$RunningTimePick,]
+    }
+    
+    if(input$YearPick == "All"){
+      overallData
+    }
+    else{
+      overallData <- overallData[overallData$Year == input$YearPick,]
+    }
+    
+    if(input$DecadePick == "All"){
+      overallData
+    }
+    else{
+      overallData <- overallData[overallData$Decade == input$DecadePick,]
+    }
+    
+    overallData
+  })
+  
+  #Output the list of the top 10 movies based on rating that meet the criteria
+  output$Top10 <- DT::renderDataTable({
+    top10 <- data()[rev(order(data()$Rating)),]
+    top10 <- as.data.frame(table(top10$Title, top10$Rating, top10$Year))
+    names(top10)[names(top10) == "Var1"] <- "Title"
+    names(top10)[names(top10) == "Var2"] <- "Rating"
+    names(top10)[names(top10) == "Var3"] <- "Year"
+    top10 <- head(top10, n = 10)
+    top10
+  })
+  
+  #Output text for the movies that meet the criteria
+  output$Movies <- renderText({
+    nrow(data())
+  })
+  
   output$MoviesPerYearChart <- renderPlot({
     #amount of movies per year
-    ggplot(overallData) +
-      aes(x = overallData$Year) +
+    ggplot(data()) +
+      aes(x = data()$Year) +
       geom_bar( fill="tomato3") +
       labs(title="Number of Movies Released per Year",caption="source: Year") +
       labs(x = "Year", y = "Count") +
@@ -194,15 +273,15 @@ server <- function(input, output) {
   
   output$MoviesPerYearTable = DT::renderDataTable({
     #table for movies per year,full data unique titles set(no duplicates of same movie)
-    movieYearTable <- as.data.frame(table(overallData$Year))
+    movieYearTable <- as.data.frame(table(data()$Year))
     names(movieYearTable)[names(movieYearTable) == "Var1"] <- "Year"
     movieYearTable
   })
   
   output$MoviesPerMonthChart <- renderPlot({
     #amount of movies per year
-    ggplot(overallData) +
-      aes(x = overallData$Month) +
+    ggplot(data()) +
+      aes(x = data()$Month) +
       geom_bar( fill="tomato3") +
       labs(title="Number of Movies Released per Month",caption="source: Month") +
       labs(x = "Month", y = "Count") +
@@ -211,15 +290,15 @@ server <- function(input, output) {
   
   output$MoviesPerMonthTable = DT::renderDataTable({
     #table for movies per month,full data unique titles set(no duplicates of same movie)
-    movieMonthTable <- as.data.frame(table(overallData$Month))
+    movieMonthTable <- as.data.frame(table(data()$Month))
     names(movieMonthTable)[names(movieMonthTable) == "Var1"] <- "Month"
     movieMonthTable
   })
   
   output$MoviesPerRuntimeChart <- renderPlot({
     #amount of movies per runtime
-    ggplot(overallData) +
-      aes(x = factor(overallData$Running.Time)) +
+    ggplot(data()) +
+      aes(x = factor(data()$Running.Time)) +
       geom_bar( fill="tomato3") +
       labs(title="Distribution of Movie Runtimes",caption="source: Running Time") +
       labs(x = "Runtime (in minutes)", y = "Count") +
@@ -228,7 +307,7 @@ server <- function(input, output) {
   
   output$MoviesPerRunTimeTable = DT::renderDataTable({
     #table for movies per runtime
-    runtimeTable <- as.data.frame(table(overallData$Running.Time))
+    runtimeTable <- as.data.frame(table(data()$Running.Time))
     names(runtimeTable)[names(runtimeTable) == "Var1"] <- "Runtime (in minutes)"
     runtimeTable <- runtimeTable[rev(order(runtimeTable$Freq)),]
     row.names(runtimeTable) <- NULL
@@ -237,7 +316,7 @@ server <- function(input, output) {
   
   output$MoviesPerGenreChart <- renderPlot({
     #amount of movies per Genre
-    ggplot(overallData, aes(x=factor(Genres))) +
+    ggplot(data(), aes(x=factor(data()$Genres))) +
       geom_bar( width=.5, fill="tomato3") +
       labs(title="Number of Movies per Genre", caption="source: Genres") +
       labs(x = "Genre", y = "Count") +
@@ -246,14 +325,14 @@ server <- function(input, output) {
   
   output$MoviesPerGenreTable = DT::renderDataTable({
     #table for genre
-    genreTable <- as.data.frame(table(overallData$Genres))
+    genreTable <- as.data.frame(table(data()$Genres))
     names(genreTable)[names(genreTable) == "Var1"] <- "Genres"
     genreTable
   })
   
   output$MoviesPerCertificateChart <- renderPlot({
     #amount of movies per Certificate
-    ggplot(overallData, aes(x=factor(Certificate))) +
+    ggplot(data(), aes(x=factor(data()$Certificate))) +
       geom_bar( width=.5, fill="tomato3") +
       labs(title="Number of Movies per Certificate", caption="source: Certificate") +
       labs(x = "Certificate", y = "Count") +
@@ -262,7 +341,7 @@ server <- function(input, output) {
   
   output$MoviesPerCertificateTable = DT::renderDataTable({
     #table for movies per Certificate
-    certificateTable <- as.data.frame(table(overallData$Certificate))
+    certificateTable <- as.data.frame(table(data()$Certificate))
     names(certificateTable)[names(certificateTable) == "Var1"] <- "Certificate"
     certificateTable
   })
