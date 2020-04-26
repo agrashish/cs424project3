@@ -80,33 +80,34 @@ ui <- dashboardPage(
   dashboardHeader(title = "CS 424 Project 3"),
   dashboardSidebar(
     width = 300,
+    collapsed=TRUE,
     sidebarMenu(
       menuItem("Dashboard", tabName ="dashboard", icon = icon("dashboard")),
       menuItem("About",tabName = "til", startExpanded = F, icon = icon("question"),
         h4("Coded By:"), p("Ivan M., Richard M., Aashish A."), 
         h4("Libraries:"), p("shiny,shinydashboard,ggplot2"),
         h4("Data Source:"), p("IMDB"), tags$p(tags$a(href = "ftp://ftp.fu-berlin.de/pub/misc/movies/database/frozendata/", "fu-berlin.de"))
-      ),
-      menuItem("Movies that Meet the Criteria", tabName = "blanks"),
-      menuItem(infoBoxOutput("criteriaMov")),
-      menuItem("", tabName = "blanks"),
-      menuItem("", tabName = "blanks"),
-      menuItem("", tabName = "blanks"),
-      menuItem("", tabName = "blanks"),
-      menuItem("Average Films Released Per Year", tabName = "blanks"),
-      menuItem(infoBoxOutput("avgYear")),
-      menuItem("", tabName = "blanks"),
-      menuItem("", tabName = "blanks"),
-      menuItem("", tabName = "blanks"),
-      menuItem("", tabName = "blanks"),
-      menuItem("Average Films Released Per Month", tabName = "blanks"),
-      menuItem(infoBoxOutput("avgMonth")),
-      menuItem("", tabName = "blanks"),
-      menuItem("", tabName = "blanks"),
-      menuItem("", tabName = "blanks"),
-      menuItem("", tabName = "blanks"),
-      menuItem("Average Runtime of Films", tabName = "blanks"),
-      menuItem(infoBoxOutput("avgRuntime"))
+      )#,
+      # menuItem("Movies that Meet the Criteria", tabName = "blanks"),
+      # #menuItem(infoBoxOutput("criteriaMov")),
+      # menuItem("", tabName = "blanks"),
+      # menuItem("", tabName = "blanks"),
+      # menuItem("", tabName = "blanks"),
+      # menuItem("", tabName = "blanks"),
+      # menuItem("Average Films Released Per Year", tabName = "blanks"),
+      # #menuItem(infoBoxOutput("avgYear")),
+      # menuItem("", tabName = "blanks"),
+      # menuItem("", tabName = "blanks"),
+      # menuItem("", tabName = "blanks"),
+      # menuItem("", tabName = "blanks"),
+      # menuItem("Average Films Released Per Month", tabName = "blanks"),
+      # #menuItem(infoBoxOutput("avgMonth")),
+      # menuItem("", tabName = "blanks"),
+      # menuItem("", tabName = "blanks"),
+      # menuItem("", tabName = "blanks"),
+      # menuItem("", tabName = "blanks"),
+      # menuItem("Average Runtime of Films", tabName = "blanks")#,
+      # #menuItem(infoBoxOutput("avgRuntime"))
     )
   ),
   dashboardBody(
@@ -166,6 +167,9 @@ ui <- dashboardPage(
     #   )
     # ), #end tags
     
+  fluidRow(
+    infoBoxOutput("criteriaMov", width = 3),infoBoxOutput("avgYear", width = 3), infoBoxOutput("avgMonth", width = 3), infoBoxOutput("avgRuntime", width = 3)
+  ), #end fluidrow
   fluidRow(
     box(width = 12, status = "primary", title = "Filter By", solidHeader = TRUE,
       column(4, box(title = "Select the Genre to filter by", selectInput("GenrePick", "Select Genre", choices = c("All", unique(as.character(overallData$Genres))))),
