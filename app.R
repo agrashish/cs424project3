@@ -78,9 +78,9 @@ ui <- dashboardPage(
     sidebarMenu(
       menuItem("Dashboard", tabName ="dashboard", icon = icon("dashboard")),
       menuItem("About",tabName = "til", startExpanded = F, icon = icon("question"),
-        h4("Coded By:"), p("Ivan M., Richard M., Aashish A."), 
-        h4("Libraries:"), p("shiny,shinydashboard,ggplot2"),
-        h4("Data Source:"), p("IMDB"), tags$p(tags$a(href = "ftp://ftp.fu-berlin.de/pub/misc/movies/database/frozendata/", "fu-berlin.de"))
+               h4("Coded By:"), p("Ivan M., Richard M., Aashish A."), 
+               h4("Libraries:"), p("shiny,shinydashboard,ggplot2"),
+               h4("Data Source:"), p("IMDB"), tags$p(tags$a(href = "ftp://ftp.fu-berlin.de/pub/misc/movies/database/frozendata/", "fu-berlin.de"))
       ),
       menuItem("Movies that Meet the Criteria", tabName = "blanks"),
       menuItem(infoBoxOutput("criteriaMov")),
@@ -161,71 +161,71 @@ ui <- dashboardPage(
     #     )
     #   )
     # ), #end tags
-  
+    
     fluidRow(
       box(width = 12, status = "primary", title = "Filter By", solidHeader = TRUE,
-          column(4, box(wdith = 2,title = "Select the Genre to filter by", selectInput("GenrePick", "Select Genre", choices = c("All", unique(overallData$Genre)))),
-                    box(wdith = 2,title = "Select the Keyword to filter by", selectInput("KeywordPick", "Select Keyword", choices = c("All", unique(overallData$Keyword))))
+          column(4, box(title = "Select the Genre to filter by", selectInput("GenrePick", "Select Genre", choices = c("All", unique(as.character(overallData$Genres))))),
+                 box(title = "Select the Keyword to filter by", selectInput("KeywordPick", "Select Keyword", choices = c("All", unique(as.character(overallData$Keyword)))))
           ), #end column
-          column(4, box(wdith = 2,title = "Select the Certificate to filter by", selectInput("CertificatePick", "Select Certificate", choices = c("All", unique(overallData$Certificate)))),
-                    box(wdith = 2,title = "Select the Running Time to filter by", selectInput("RunningTimePick", "Select Running Time", choices = c("All", unique(overallData$Running.Time))))
+          column(4, box(title = "Select the Certificate to filter by", selectInput("CertificatePick", "Select Certificate", choices = c("All", unique(as.character(overallData$Certificate))))),
+                 box(title = "Select the Running Time to filter by", selectInput("RunningTimePick", "Select Running Time", choices = c("All", unique(overallData$Running.Time))))
           ), #end column
-          column(4, box(wdith = 2,title = "Select the Year to filter by", selectInput("YearPick", "Select Year", choices = c("All", unique(overallData$Year2)))),
-                    box(wdith = 2,title = "Select the Decade to filter by", selectInput("DecadePick", "Select Decade", choices = c("All", unique(overallData$Decade))))
+          column(4, box(title = "Select the Year to filter by", selectInput("YearPick", "Select Year", choices = c("All", unique(overallData$Year2)))),
+                 box(title = "Select the Decade to filter by", selectInput("DecadePick", "Select Decade", choices = c("All", unique(overallData$Decade))))
           ) #end column
       )
     ), #end fluidRow
     fluidRow(
       box(width = 12,
-        mainPanel(width = 12, 
-          tabsetPanel(
-            tabPanel("Movies per Year",      
-              ##chart
-              box( width = 12, status = "primary", solidHeader = TRUE, plotOutput("MoviesPerYearChart", height = 360)),
-              ##table
-              box( width = 12, status = "primary", solidHeader = TRUE, DT::dataTableOutput("MoviesPerYearTable", height = 360))
-            ),
-            tabPanel("Movies per Month",      
-              ##chart
-              box( width = 12, status = "primary", solidHeader = TRUE, plotOutput("MoviesPerMonthChart", height = 360)),
-              ##table
-              box( width = 12, status = "primary", solidHeader = TRUE, DT::dataTableOutput("MoviesPerMonthTable", height = 360))
-            ),
-            tabPanel("Movies per Runtime",
-              ##chart
-              box( width = 12, status = "primary", solidHeader = TRUE, plotOutput("MoviesPerRuntimeChart", height = 360)),
-              ##table
-              box( width = 12, status = "primary", solidHeader = TRUE, DT::dataTableOutput("MoviesPerRunTimeTable", height = 360))
-            ),
-            tabPanel("Movies per Genre",
-              ##chart
-              box( width = 12, status = "primary", solidHeader = TRUE, plotOutput("MoviesPerGenreChart", height = 360)),
-              ##table
-              box( width = 12, status = "primary", solidHeader = TRUE, DT::dataTableOutput("MoviesPerGenreTable", height = 360))
-            ),
-            tabPanel("Movies per Certificate",
-              ##chart
-              box( width = 12, status = "primary", solidHeader = TRUE, plotOutput("MoviesPerCertificateChart", height = 360)),
-              ##table
-              box( width = 12, status = "primary", solidHeader = TRUE, DT::dataTableOutput("MoviesPerCertificateTable", height = 360))
-            ),
-            tabPanel("Movie Top N Keywords",
-              ##slider picker for top n
-              box(
-              sliderInput("pickFilter", "Pick N", 1, 50, 10)),
-              ##chart
-              box( width = 12, status = "primary", solidHeader = TRUE, plotOutput("MovieKeywordsChart", height = 420)),
-              ##table
-              box( width = 12, status = "primary", solidHeader = TRUE, DT::dataTableOutput("MovieKeywordsTable", height = 360))
-            ),
-            tabPanel("Runtime of each Genre",      
-              ##chart
-              box( width = 12, status = "primary", solidHeader = TRUE, plotOutput("RuntimeGenrePlot", height = 360)),
-              ##table
-              box( width = 12, status = "primary", solidHeader = TRUE, DT::dataTableOutput("RuntimeGenreTable", height = 360))
-            )
-          ) # end tabsetpanel
-        ) # end mainpanel
+          mainPanel(width = 12, 
+                    tabsetPanel(
+                      tabPanel("Movies per Year",      
+                               ##chart
+                               box( width = 12, status = "primary", solidHeader = TRUE, plotOutput("MoviesPerYearChart", height = 360)),
+                               ##table
+                               box( width = 12, status = "primary", solidHeader = TRUE, DT::dataTableOutput("MoviesPerYearTable", height = 360))
+                      ),
+                      tabPanel("Movies per Month",      
+                               ##chart
+                               box( width = 12, status = "primary", solidHeader = TRUE, plotOutput("MoviesPerMonthChart", height = 360)),
+                               ##table
+                               box( width = 12, status = "primary", solidHeader = TRUE, DT::dataTableOutput("MoviesPerMonthTable", height = 360))
+                      ),
+                      tabPanel("Movies per Runtime",
+                               ##chart
+                               box( width = 12, status = "primary", solidHeader = TRUE, plotOutput("MoviesPerRuntimeChart", height = 360)),
+                               ##table
+                               box( width = 12, status = "primary", solidHeader = TRUE, DT::dataTableOutput("MoviesPerRunTimeTable", height = 360))
+                      ),
+                      tabPanel("Movies per Genre",
+                               ##chart
+                               box( width = 12, status = "primary", solidHeader = TRUE, plotOutput("MoviesPerGenreChart", height = 360)),
+                               ##table
+                               box( width = 12, status = "primary", solidHeader = TRUE, DT::dataTableOutput("MoviesPerGenreTable", height = 360))
+                      ),
+                      tabPanel("Movies per Certificate",
+                               ##chart
+                               box( width = 12, status = "primary", solidHeader = TRUE, plotOutput("MoviesPerCertificateChart", height = 360)),
+                               ##table
+                               box( width = 12, status = "primary", solidHeader = TRUE, DT::dataTableOutput("MoviesPerCertificateTable", height = 360))
+                      ),
+                      tabPanel("Movie Top N Keywords",
+                               ##slider picker for top n
+                               box(
+                                 sliderInput("pickFilter", "Pick N", 1, 50, 10)),
+                               ##chart
+                               box( width = 12, status = "primary", solidHeader = TRUE, plotOutput("MovieKeywordsChart", height = 420)),
+                               ##table
+                               box( width = 12, status = "primary", solidHeader = TRUE, DT::dataTableOutput("MovieKeywordsTable", height = 360))
+                      ),
+                      tabPanel("Runtime of each Genre",      
+                               ##chart
+                               box( width = 12, status = "primary", solidHeader = TRUE, plotOutput("RuntimeGenrePlot", height = 360)),
+                               ##table
+                               box( width = 12, status = "primary", solidHeader = TRUE, DT::dataTableOutput("RuntimeGenreTable", height = 360))
+                      )
+                    ) # end tabsetpanel
+          ) # end mainpanel
       ) # end box
     ),#end fluidrow
     fluidRow(
