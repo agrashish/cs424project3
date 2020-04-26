@@ -13,18 +13,14 @@ library(leaflet)
 #read in data from csv 
 #(use rawdata and save into a new dataframe for your stuff ex: variableName <- rawdata)
 rawdata <- read.csv(file = "movies_data.csv")
-#overallData is used for our overall plots
-#overallData only has unique titles (so one row for each movie)
-overallData <- rawdata
+
 #order by year
-overallData <- rawdata[order(rawdata$Year),]
-#remove duplicates
-overallData <- overallData[!duplicated(overallData["Title"]),]
+rawdata <- rawdata[order(rawdata$Year),]
 
 #convert release date to character (so we can pull month from it)
-overallData$Release.Date <- as.character(overallData$Release.Date)
+rawdata$Release.Date <- as.character(rawdata$Release.Date)
 #pull month from release date
-overallData$Month <- sapply(strsplit(overallData$Release.Date, " "), function(x) {
+rawdata$Month <- sapply(strsplit(rawdata$Release.Date, " "), function(x) {
   if (length(x) == 2) {
     x[1]
   }
@@ -35,17 +31,27 @@ overallData$Month <- sapply(strsplit(overallData$Release.Date, " "), function(x)
 #month vector
 months = c("January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December")
 #use month vector to factor Month column in right order
-overallData$Month <- factor(overallData$Month, levels = months)
+rawdata$Month <- factor(rawdata$Month, levels = months)
 
 #make decade column for our decade filtering
-overallData$Decade <- as.character(overallData$Year)
+rawdata$Decade <- as.character(rawdata$Year)
 #since decades don't care about individual years, remove last digit and set to 0. So 2011 is in the 2010 decade
-substr(overallData$Decade,start=4, stop=4) <- "0"
+substr(rawdata$Decade,start=4, stop=4) <- "0"
 
 #store unfactored year
-overallData$Year2 <-overallData$Year
+rawdata$Year2 <-rawdata$Year
 #make years as factors (for our plots)
-overallData$Year <- factor(overallData$Year)
+rawdata$Year <- factor(rawdata$Year)
+
+#create set column, so that we can make comparison bar graphs
+rawdata["set"] = "All"
+
+#overallData is used for our overall plots
+#overallData only has unique titles (so one row for each movie)
+overallData <- rawdata
+
+#remove duplicates
+overallData <- overallData[!duplicated(overallData["Title"]),]
 
 #counter column, so we can get averages
 overallData["Counter"] = 1
@@ -68,10 +74,6 @@ keywords <- as.data.frame(table(rawdata$Keyword))
 names(keywords)[names(keywords) == "Var1"] <- "Keyword"
 keywords <- keywords[rev(order(keywords$Freq)),]
 row.names(keywords) <- NULL
-
-#create set column, so that we can make comparison bar graphs
-overallData["set"] = "All"
-
 
 # begin ui
 ui <- dashboardPage(
@@ -244,7 +246,7 @@ server <- function(input, output) {
     infoBox(
       "Average Films Released Per Year",
       paste0(sprintf("%0.2f", avgPerYear), " Films"),
-      icon = icon("calendar"),
+      icon = icon("calendar")
     )
   })
   
@@ -361,10 +363,19 @@ server <- function(input, output) {
   })
   
   output$MoviesPerMonthChart <- renderPlot({
+    df1 <- overallData[,c("Month", "set")]
+    monthdf1 <- data.frame(table(df1["Month"]))
+    colnames(monthdf1) <- c("Month", "Freq")
+    monthdf1["set"] <- "All"
+    df2 <- uniquedata()[,c("Month", "set")]
+    monthdf2 <- data.frame(table(df2["Month"]))
+    colnames(monthdf2) <- c("Month", "Freq")
+    monthdf2["set"] <- "Filtered"
+    df <- rbind(monthdf1, monthdf2)
     #amount of movies per year
-    ggplot(data()) +
-      aes(x = data()$Month, fill="set") +
-      geom_bar( fill="tomato3") +
+    ggplot(df) +
+      aes(x = Month, y = Freq, fill = set) +
+      geom_col(position = "dodge") +
       labs(title="Number of Movies Released per Month",caption="source: Month") +
       labs(x = "Month", y = "Count") +
       theme(axis.text.x = element_text(angle=65, vjust=0.6))
