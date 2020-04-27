@@ -37,6 +37,7 @@ rawdata$Month <- factor(rawdata$Month, levels = months)
 rawdata$Decade <- as.character(rawdata$Year)
 #since decades don't care about individual years, remove last digit and set to 0. So 2011 is in the 2010 decade
 substr(rawdata$Decade,start=4, stop=4) <- "0"
+rawdata$Decade <- as.integer(rawdata$Decade)
 
 #store unfactored year
 rawdata$Year2 <-rawdata$Year
@@ -74,6 +75,8 @@ keywords <- as.data.frame(table(rawdata$Keyword))
 names(keywords)[names(keywords) == "Var1"] <- "Keyword"
 keywords <- keywords[rev(order(keywords$Freq)),]
 row.names(keywords) <- NULL
+
+
 
 # begin ui
 ui <- dashboardPage(
@@ -176,7 +179,7 @@ ui <- dashboardPage(
                 box(selectizeInput('KeywordPick', 'Select Keyword(s)', choices = c(unique(as.character(overallData$Keyword))), multiple = TRUE, selected = NULL))
       ), #end column
       column(4, box(selectizeInput('CertificatePick', 'Select Certificate(s)', choices = c(unique(as.character(overallData$Certificate))), multiple = TRUE, selected = NULL)),
-                box(title = "Select the Running Time to filter by", selectInput("RunningTimePick", "Select Running Time", choices = c("All", unique(overallData$Running.Time))))
+                box(title = "Select the Running Time to filter by", selectInput("RunningTimePick", "Select Running Time", choices = c("All", "60 - 90", "90 - 120", "120 - 150", "150 - MAX")))
       ), #end column
       column(4, box(title = "Select the Year to filter by", selectInput("YearPick", "Select Year", choices = c("All", unique(overallData$Year2)))),
                 box(title = "Select the Decade to filter by", selectInput("DecadePick", "Select Decade", choices = c("All", unique(overallData$Decade))))
@@ -184,9 +187,15 @@ ui <- dashboardPage(
     )
   ), #end fluidRow
   fluidRow(
-    box(width = 12,
+    box(width = 12, status = "primary", title = "Statistics", solidHeader = TRUE,
       mainPanel(width = 12, 
         tabsetPanel(
+          tabPanel("Movies per Decade",      
+                   ##chart
+                   box( width = 12, status = "primary", solidHeader = TRUE, plotOutput("MoviesPerDecadeChart", height = 360)),
+                   ##table
+                   box( width = 12, status = "primary", solidHeader = TRUE, DT::dataTableOutput("MoviesPerDecadeTable", height = 360))
+          ),
           tabPanel("Movies per Year",      
             ##chart
             box( width = 12, status = "primary", solidHeader = TRUE, plotOutput("MoviesPerYearChart", height = 360)),
@@ -225,7 +234,10 @@ ui <- dashboardPage(
             box( width = 12, status = "primary", solidHeader = TRUE, plotOutput("MovieKeywordsChart", height = 420)),
             ##table
             box( width = 12, status = "primary", solidHeader = TRUE, DT::dataTableOutput("MovieKeywordsTable", height = 360))
-          )#,
+          ),
+          tabPanel("Top 10 Movie Ratings",
+            box( width = 12, title = "Top 10 per rating", status = "primary", solidHeader = TRUE, DT::dataTableOutput("Top10", height = 360))
+          )
           # tabPanel("Runtime of each Genre",      
           #   ##chart
           #   box( width = 12, status = "primary", solidHeader = TRUE, plotOutput("RuntimeGenrePlot", height = 360)),
@@ -235,10 +247,7 @@ ui <- dashboardPage(
         ) # end tabsetpanel
       ) # end mainpanel
     ) # end box
-  ),#end fluidrow
-  fluidRow(
-    box( width = 12, title = "Top 10 per rating", status = "primary", solidHeader = TRUE, DT::dataTableOutput("Top10", height = 360))
-  )
+  )#end fluidrow
   )##end dashboardBody
 )##end dashboardPage
 
@@ -403,12 +412,41 @@ server <- function(input, output) {
       overallData2
     }
     else{
-      temp <- overallData2[overallData2$Running.Time %in% input$RunningTimePick,]
-      if(nrow(temp) == 0){
-        overallData2
+      if(input$RunningTimePick == "60 - 90"){
+        temp <- overallData2[(overallData2$Running.Time > 60) & (overallData2$Running.Time < 90),]
+        if(nrow(temp) == 0){
+          overallData2
+        }
+        else{
+          overallData2 <- overallData2[(overallData2$Running.Time > 60) & (overallData2$Running.Time < 90),]
+        }
       }
-      else{
-        overallData2 <- overallData2[overallData2$Running.Time == input$RunningTimePick,]
+      else if(input$RunningTimePick == "90 - 120"){
+        temp <- overallData2[(overallData2$Running.Time > 90) & (overallData2$Running.Time < 120),]
+        if(nrow(temp) == 0){
+          overallData2
+        }
+        else{
+          overallData2 <- overallData2[(overallData2$Running.Time > 90) & (overallData2$Running.Time < 120),]
+        }
+      }
+      else if(input$RunningTimePick == "120 - 150"){
+        temp <- overallData2[(overallData2$Running.Time > 120) & (overallData2$Running.Time < 150),]
+        if(nrow(temp) == 0){
+          overallData2
+        }
+        else{
+          overallData2 <- overallData2[(overallData2$Running.Time > 120) & (overallData2$Running.Time < 150),]
+        }
+      }
+      else if(input$RunningTimePick == "150 - MAX"){
+        temp <- overallData2[overallData2$Running.Time > 150,]
+        if(nrow(temp) == 0){
+          overallData2
+        }
+        else{
+          overallData2 <- overallData2[overallData2$Running.Time > 150,]
+        }
       }
     }
     
@@ -471,6 +509,61 @@ server <- function(input, output) {
     rownames(top10) <- NULL
     top10 <- head(top10, 10)
     top10
+  })
+  
+  output$MoviesPerDecadeChart <- renderPlot({
+    if(isFiltered()) {
+      df1 <- overallData[,c("Decade", "set")]
+      df1 <- data.frame(table(df1["Decade"]))
+      colnames(df1) <- c("Decade", "Freq")
+      df1["set"] <- "All"
+      df2 <- uniquedata()[,c("Decade", "set")]
+      df2 <- data.frame(table(df2["Decade"]))
+      colnames(df2) <- c("Decade", "Freq")
+      df2["set"] <- "Filtered"
+      df <- rbind(df1, df2)
+      
+      #amount of movies per Decade
+      ggplot(df) +
+        aes(x = Decade, y = Freq, fill = set) +
+        geom_col(position = "dodge") +
+        labs(title="Number of Movies Released per Decade",caption="source: Decade") +
+        labs(x = "Decade", y = "Count") +
+        theme(axis.text.x = element_text(angle=65, vjust=0.6))
+    }
+    else {
+      #amount of movies per Decade
+      ggplot(data()) +
+        aes(x = data()$Decade) +
+        geom_bar( fill="tomato3") +
+        labs(title="Number of Movies Released per Decade",caption="source: Decade") +
+        labs(x = "Decade", y = "Count") +
+        theme(axis.text.x = element_text(angle=65, vjust=0.6)) +
+        #copied this code from https://stackoverflow.com/questions/11335836/increase-number-of-axis-ticks
+        scale_x_continuous(breaks = scales::pretty_breaks(n = 10)) +
+        scale_y_continuous(breaks = scales::pretty_breaks(n = 10))
+    }
+  })
+  
+  output$MoviesPerDecadeTable = DT::renderDataTable({
+    if(isFiltered()) {
+      df1 <- overallData[,c("Decade", "set")]
+      df1 <- data.frame(table(df1["Decade"]))
+      colnames(df1) <- c("Decade", "Freq")
+      df1["set"] <- "All"
+      df2 <- uniquedata()[,c("Decade", "set")]
+      df2 <- data.frame(table(df2["Decade"]))
+      colnames(df2) <- c("Decade", "Freq")
+      df2["set"] <- "Filtered"
+      df <- rbind(df1, df2)
+      df
+    }
+    else {
+      #table for movies per Decade,full data unique titles set(no duplicates of same movie)
+      movieDecadeTable <- as.data.frame(table(data()$Decade))
+      names(movieDecadeTable)[names(movieDecadeTable) == "Var1"] <- "Decade"
+      movieDecadeTable
+    }
   })
   
   output$MoviesPerYearChart <- renderPlot({
