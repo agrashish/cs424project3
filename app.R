@@ -8,7 +8,6 @@
 library(shiny)
 library(shinydashboard)
 library(ggplot2)
-library(leaflet)
 
 #read in data from csv 
 #(use rawdata and save into a new dataframe for your stuff ex: variableName <- rawdata)
@@ -190,23 +189,53 @@ ui <- dashboardPage(
     box(width = 12, status = "primary", title = "Statistics", solidHeader = TRUE,
       mainPanel(width = 12, 
         tabsetPanel(
-          tabPanel("Movies per Decade",      
-            ##chart
-            box( width = 12, status = "primary", solidHeader = TRUE, plotOutput("MoviesPerDecadeChart", height = 360)),
-            ##table
-            box( width = 12, status = "primary", solidHeader = TRUE, DT::dataTableOutput("MoviesPerDecadeTable", height = 360))
+          tabPanel("Movies per Decade",
+            tabsetPanel(
+              tabPanel( "Counts",
+                ##chart
+                box( width = 12, status = "primary", solidHeader = TRUE, plotOutput("MoviesPerDecadeChart", height = 360)),
+                ##table
+                box( width = 12, status = "primary", solidHeader = TRUE, DT::dataTableOutput("MoviesPerDecadeTable", height = 360))
+              ),
+              tabPanel("Percents",
+                #chart
+                box( width = 12, status = "primary", solidHeader = TRUE, plotOutput("MoviesPerDecadePercentChart", height = 360)),
+                ##table
+                box( width = 12, status = "primary", solidHeader = TRUE, DT::dataTableOutput("MoviesPerDecadePercentTable", height = 360))
+              )
+            )
           ),
-          tabPanel("Movies per Year",      
-            ##chart
-            box( width = 12, status = "primary", solidHeader = TRUE, plotOutput("MoviesPerYearChart", height = 360)),
-            ##table
-            box( width = 12, status = "primary", solidHeader = TRUE, DT::dataTableOutput("MoviesPerYearTable", height = 360))
+          tabPanel("Movies per Year",
+            tabsetPanel(
+              tabPanel( "Counts",
+                ##chart
+                box( width = 12, status = "primary", solidHeader = TRUE, plotOutput("MoviesPerYearChart", height = 360)),
+                ##table
+                box( width = 12, status = "primary", solidHeader = TRUE, DT::dataTableOutput("MoviesPerYearTable", height = 360))
+              ),
+              tabPanel("Percents",
+                #chart
+                box( width = 12, status = "primary", solidHeader = TRUE, plotOutput("MoviesPerYearPercentChart", height = 360)),
+                ##table
+                box( width = 12, status = "primary", solidHeader = TRUE, DT::dataTableOutput("MoviesPerYearPercentTable", height = 360))
+              )
+            )
           ),
-          tabPanel("Movies per Month",      
-            ##chart
-            box( width = 12, status = "primary", solidHeader = TRUE, plotOutput("MoviesPerMonthChart", height = 360)),
-            ##table
-            box( width = 12, status = "primary", solidHeader = TRUE, DT::dataTableOutput("MoviesPerMonthTable", height = 360))
+          tabPanel("Movies per Month",
+            tabsetPanel(
+              tabPanel( "Counts",
+                ##chart
+                box( width = 12, status = "primary", solidHeader = TRUE, plotOutput("MoviesPerMonthChart", height = 360)),
+                ##table
+                box( width = 12, status = "primary", solidHeader = TRUE, DT::dataTableOutput("MoviesPerMonthTable", height = 360))
+              ),
+              tabPanel("Percents",
+                #chart
+                box( width = 12, status = "primary", solidHeader = TRUE, plotOutput("MoviesPerMonthPercentChart", height = 360)),
+                ##table
+                box( width = 12, status = "primary", solidHeader = TRUE, DT::dataTableOutput("MoviesPerMonthPercentTable", height = 360))
+              )
+            )
           ),
           tabPanel("Movies per Runtime",
             ##chart
@@ -566,6 +595,70 @@ server <- function(input, output) {
     }
   })
   
+  output$MoviesPerDecadePercentChart <- renderPlot({
+    if(isFiltered()) {
+      df1 <- overallData[,c("Decade", "set")]
+      df1 <- data.frame(table(df1["Decade"]))
+      colnames(df1) <- c("Decade", "Freq")
+      df1["set"] <- "All"
+      df2 <- uniquedata()[,c("Decade", "set")]
+      df2 <- data.frame(table(df2["Decade"]))
+      colnames(df2) <- c("Decade", "Freq")
+      df <- merge(df1, df2, by = "Decade", all = TRUE)
+      df[is.na(df)] <- 0
+      df["Percent"] <- df["Freq.y"] / df["Freq.x"]
+      #amount of movies per Decade
+      ggplot(df) +
+        aes(x = factor(Decade), y = Percent) +
+        geom_col(position = "dodge") +
+        labs(title="Number of Movies Released per Decade",caption="source: Decade") +
+        labs(x = "Decade", y = "Percent") +
+        theme(axis.text.x = element_text(angle=65, vjust=0.6)) +
+        scale_y_continuous(labels = scales::percent)
+    }
+    else {
+      df1 <- overallData[,c("Decade", "set")]
+      df1 <- data.frame(table(df1["Decade"]))
+      colnames(df1) <- c("Decade", "Freq")
+      df1["Percent"] <- 1.0
+      #amount of movies per Decade
+      ggplot(df1) +
+        aes(x = Decade, y = Percent) +
+        geom_col( fill="tomato3") +
+        labs(title="Number of Movies Released per Decade",caption="source: Decade") +
+        labs(x = "Decade", y = "Count") +
+        theme(axis.text.x = element_text(angle=65, vjust=0.6)) +
+        #copied this code from https://stackoverflow.com/questions/11335836/increase-number-of-axis-ticks
+        scale_y_continuous(labels = scales::percent)
+    }
+  })
+  
+  output$MoviesPerDecadePercentTable = DT::renderDataTable({
+    if(isFiltered()) {
+      df1 <- overallData[,c("Decade", "set")]
+      df1 <- data.frame(table(df1["Decade"]))
+      colnames(df1) <- c("Decade", "Freq")
+      df2 <- uniquedata()[,c("Decade", "set")]
+      df2 <- data.frame(table(df2["Decade"]))
+      colnames(df2) <- c("Decade", "Freq")
+      df <- merge(df1, df2, by = "Decade", all = TRUE)
+      df[is.na(df)] <- 0
+      df["Percent"] <- df["Freq.y"] / df["Freq.x"] * 100
+      df["Percent"] <- round(df["Percent"], 2)
+      df <-  df[,c("Decade", "Percent")]
+      df
+    }
+    else {
+      df1 <- overallData[,c("Decade", "set")]
+      df1 <- data.frame(table(df1["Decade"]))
+      colnames(df1) <- c("Decade", "Freq")
+      df1["Percent"] <- 1.0 * 100
+      df1["Percent"] <- round(df1["Percent"], 2)
+      df1 <-  df1[,c("Decade", "Percent")]
+      df1
+    }
+  })
+  
   output$MoviesPerYearChart <- renderPlot({
     if(isFiltered()) {
       df1 <- overallData[,c("Year", "set")]
@@ -618,6 +711,70 @@ server <- function(input, output) {
     }
   })
   
+  output$MoviesPerYearPercentChart <- renderPlot({
+    if(isFiltered()) {
+      df1 <- overallData[,c("Year", "set")]
+      df1 <- data.frame(table(df1["Year"]))
+      colnames(df1) <- c("Year", "Freq")
+      df1["set"] <- "All"
+      df2 <- uniquedata()[,c("Year", "set")]
+      df2 <- data.frame(table(df2["Year"]))
+      colnames(df2) <- c("Year", "Freq")
+      df <- merge(df1, df2, by = "Year", all = TRUE)
+      df[is.na(df)] <- 0
+      df["Percent"] <- df["Freq.y"] / df["Freq.x"]
+      #amount of movies per Year
+      ggplot(df) +
+        aes(x = factor(Year), y = Percent) +
+        geom_col(position = "dodge") +
+        labs(title="Number of Movies Released per Year",caption="source: Year") +
+        labs(x = "Year", y = "Percent") +
+        theme(axis.text.x = element_text(angle=65, vjust=0.6)) +
+        scale_y_continuous(labels = scales::percent)
+    }
+    else {
+      df1 <- overallData[,c("Year", "set")]
+      df1 <- data.frame(table(df1["Year"]))
+      colnames(df1) <- c("Year", "Freq")
+      df1["Percent"] <- 1.0
+      #amount of movies per Year
+      ggplot(df1) +
+        aes(x = Year, y = Percent) +
+        geom_col( fill="tomato3") +
+        labs(title="Number of Movies Released per Year",caption="source: Year") +
+        labs(x = "Year", y = "Count") +
+        theme(axis.text.x = element_text(angle=65, vjust=0.6)) +
+        #copied this code from https://stackoverflow.com/questions/11335836/increase-number-of-axis-ticks
+        scale_y_continuous(labels = scales::percent)
+    }
+  })
+  
+  output$MoviesPerYearPercentTable = DT::renderDataTable({
+    if(isFiltered()) {
+      df1 <- overallData[,c("Year", "set")]
+      df1 <- data.frame(table(df1["Year"]))
+      colnames(df1) <- c("Year", "Freq")
+      df2 <- uniquedata()[,c("Year", "set")]
+      df2 <- data.frame(table(df2["Year"]))
+      colnames(df2) <- c("Year", "Freq")
+      df <- merge(df1, df2, by = "Year", all = TRUE)
+      df[is.na(df)] <- 0
+      df["Percent"] <- df["Freq.y"] / df["Freq.x"] * 100
+      df["Percent"] <- round(df["Percent"], 2)
+      df <-  df[,c("Year", "Percent")]
+      df
+    }
+    else {
+      df1 <- overallData[,c("Year", "set")]
+      df1 <- data.frame(table(df1["Year"]))
+      colnames(df1) <- c("Year", "Freq")
+      df1["Percent"] <- 1.0 * 100
+      df1["Percent"] <- round(df1["Percent"], 2)
+      df1 <-  df1[,c("Year", "Percent")]
+      df1
+    }
+  })
+  
   output$MoviesPerMonthChart <- renderPlot({
     if(isFiltered()) {
       df1 <- overallData[,c("Month", "set")]
@@ -666,6 +823,70 @@ server <- function(input, output) {
       movieMonthTable <- as.data.frame(table(data()$Month))
       names(movieMonthTable)[names(movieMonthTable) == "Var1"] <- "Month"
       movieMonthTable
+    }
+  })
+  
+  output$MoviesPerMonthPercentChart <- renderPlot({
+    if(isFiltered()) {
+      df1 <- overallData[,c("Month", "set")]
+      df1 <- data.frame(table(df1["Month"]))
+      colnames(df1) <- c("Month", "Freq")
+      df1["set"] <- "All"
+      df2 <- uniquedata()[,c("Month", "set")]
+      df2 <- data.frame(table(df2["Month"]))
+      colnames(df2) <- c("Month", "Freq")
+      df <- merge(df1, df2, by = "Month", all = TRUE)
+      df[is.na(df)] <- 0
+      df["Percent"] <- df["Freq.y"] / df["Freq.x"]
+      #amount of movies per Month
+      ggplot(df) +
+        aes(x = factor(Month), y = Percent) +
+        geom_col(position = "dodge") +
+        labs(title="Number of Movies Released per Month",caption="source: Month") +
+        labs(x = "Month", y = "Percent") +
+        theme(axis.text.x = element_text(angle=65, vjust=0.6)) +
+        scale_y_continuous(labels = scales::percent)
+    }
+    else {
+      df1 <- overallData[,c("Month", "set")]
+      df1 <- data.frame(table(df1["Month"]))
+      colnames(df1) <- c("Month", "Freq")
+      df1["Percent"] <- 1.0
+      #amount of movies per Month
+      ggplot(df1) +
+        aes(x = Month, y = Percent) +
+        geom_col( fill="tomato3") +
+        labs(title="Number of Movies Released per Month",caption="source: Month") +
+        labs(x = "Month", y = "Count") +
+        theme(axis.text.x = element_text(angle=65, vjust=0.6)) +
+        #copied this code from https://stackoverflow.com/questions/11335836/increase-number-of-axis-ticks
+        scale_y_continuous(labels = scales::percent)
+    }
+  })
+  
+  output$MoviesPerMonthPercentTable = DT::renderDataTable({
+    if(isFiltered()) {
+      df1 <- overallData[,c("Month", "set")]
+      df1 <- data.frame(table(df1["Month"]))
+      colnames(df1) <- c("Month", "Freq")
+      df2 <- uniquedata()[,c("Month", "set")]
+      df2 <- data.frame(table(df2["Month"]))
+      colnames(df2) <- c("Month", "Freq")
+      df <- merge(df1, df2, by = "Month", all = TRUE)
+      df[is.na(df)] <- 0
+      df["Percent"] <- df["Freq.y"] / df["Freq.x"] * 100
+      df["Percent"] <- round(df["Percent"], 2)
+      df <-  df[,c("Month", "Percent")]
+      df
+    }
+    else {
+      df1 <- overallData[,c("Month", "set")]
+      df1 <- data.frame(table(df1["Month"]))
+      colnames(df1) <- c("Month", "Freq")
+      df1["Percent"] <- 1.0 * 100
+      df1["Percent"] <- round(df1["Percent"], 2)
+      df1 <-  df1[,c("Month", "Percent")]
+      df1
     }
   })
   
