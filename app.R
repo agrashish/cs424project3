@@ -191,10 +191,10 @@ ui <- dashboardPage(
       mainPanel(width = 12, 
         tabsetPanel(
           tabPanel("Movies per Decade",      
-                   ##chart
-                   box( width = 12, status = "primary", solidHeader = TRUE, plotOutput("MoviesPerDecadeChart", height = 360)),
-                   ##table
-                   box( width = 12, status = "primary", solidHeader = TRUE, DT::dataTableOutput("MoviesPerDecadeTable", height = 360))
+            ##chart
+            box( width = 12, status = "primary", solidHeader = TRUE, plotOutput("MoviesPerDecadeChart", height = 360)),
+            ##table
+            box( width = 12, status = "primary", solidHeader = TRUE, DT::dataTableOutput("MoviesPerDecadeTable", height = 360))
           ),
           tabPanel("Movies per Year",      
             ##chart
@@ -503,7 +503,7 @@ server <- function(input, output) {
   
   #Output the list of the top 10 movies based on rating that meet the criteria
   output$Top10 <- DT::renderDataTable({
-    top10 <- data()
+    top10 <- uniquedata()
     top10 <- top10[rev(order(top10$Rating)),]
     top10 <- top10[,c("Title", "Rating", "Year")]
     rownames(top10) <- NULL
