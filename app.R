@@ -172,14 +172,14 @@ ui <- dashboardPage(
   ), #end fluidrow
   fluidRow(
     box(width = 12, status = "primary", title = "Filter By", solidHeader = TRUE,
-      column(4, box(title = "Select the Genre to filter by", selectInput("GenrePick", "Select Genre", choices = c("All", unique(as.character(overallData$Genres))))),
-        box(title = "Select the Keyword to filter by", selectInput("KeywordPick", "Select Keyword", choices = c("All", unique(as.character(overallData$Keyword)))))
+      column(4, box(selectizeInput('GenrePick', 'Select Genre(s)', choices = c(unique(as.character(overallData$Genres))), multiple = TRUE, selected = NULL)),
+                box(selectizeInput('KeywordPick', 'Select Keyword(s)', choices = c(unique(as.character(overallData$Keyword))), multiple = TRUE, selected = NULL))
       ), #end column
-      column(4, box(title = "Select the Certificate to filter by", selectInput("CertificatePick", "Select Certificate", choices = c("All", unique(as.character(overallData$Certificate))))),
-        box(title = "Select the Running Time to filter by", selectInput("RunningTimePick", "Select Running Time", choices = c("All", unique(overallData$Running.Time))))
+      column(4, box(selectizeInput('CertificatePick', 'Select Certificate(s)', choices = c(unique(as.character(overallData$Certificate))), multiple = TRUE, selected = NULL)),
+                box(title = "Select the Running Time to filter by", selectInput("RunningTimePick", "Select Running Time", choices = c("All", unique(overallData$Running.Time))))
       ), #end column
       column(4, box(title = "Select the Year to filter by", selectInput("YearPick", "Select Year", choices = c("All", unique(overallData$Year2)))),
-        box(title = "Select the Decade to filter by", selectInput("DecadePick", "Select Decade", choices = c("All", unique(overallData$Decade))))
+                box(title = "Select the Decade to filter by", selectInput("DecadePick", "Select Decade", choices = c("All", unique(overallData$Decade))))
       ) #end column
     )
   ), #end fluidRow
@@ -298,47 +298,148 @@ server <- function(input, output) {
   #Reactive Function that changes the dataframe based on the filter the user picks
   data <- reactive({
     overallData2 <- rawdata
-    if(input$GenrePick == "All"){
-      
+    
+    #Handle multiple Genres
+    if(is.null(input$GenrePick)){
+      overallData2
     }
     else{
-      overallData2 <- overallData2[overallData2$Genre == input$GenrePick,]
+      splitted <- strsplit(input$GenrePick, "[ ]")
+      if(length(splitted) > 1){
+        df_iter <- overallData2
+        for (s in splitted){
+          temp <-subset(df_iter, df_iter$Genres %in% s)
+          title <- temp[!duplicated(temp["Title"]),]
+          
+          if(nrow(title) == 0){
+            temp
+          }
+          else{
+            temp <- temp[temp$Title %in% title$Title,]
+          }
+          df_iter <- rbind(df_iter, temp)
+        } 
+        overallData2 <- temp
+      }
+      else{
+        temp <- overallData2[overallData2$Genres %in% input$GenrePick,]
+        if(nrow(temp) == 0){
+          overallData2
+        }
+        else{
+          overallData2 <- overallData2[overallData2$Genres %in% input$GenrePick,]
+        }
+      }
     }
     
-    if(input$KeywordPick == "All"){
-      
+    #Handle multiple keywords
+    if(is.null(input$KeywordPick)){
+      overallData2
     }
     else{
-      overallData2 <- overallData2[overallData2$Keyword == input$KeywordPick,]
+      splitted <- strsplit(input$KeywordPick, "[ ]")
+      if(length(splitted) > 1){
+        df_iter <- overallData2
+        for (s in splitted){
+          temp <-subset(df_iter, df_iter$Keyword %in% s)
+          title <- temp[!duplicated(temp["Title"]),]
+          
+          if(nrow(title) == 0){
+            temp
+          }
+          else{
+            temp <- temp[temp$Title %in% title$Title,]
+          }
+          df_iter <- rbind(df_iter, temp)
+        } 
+        overallData2 <- temp
+      }
+      else{
+        temp <- overallData2[overallData2$Keyword %in% input$KeywordPick,]
+        if(nrow(temp) == 0){
+          overallData2
+        }
+        else{
+          overallData2 <- overallData2[overallData2$Keyword %in% input$KeywordPick,]
+        }
+      }
     }
     
-    if(input$CertificatePick == "All"){
-      
+    #Handle multiple certificates 
+    if(is.null(input$CertificatePick)){
+      overallData2
     }
     else{
-      overallData2 <- overallData2[overallData2$Certificate == input$CertificatePick,]
+      splitted <- strsplit(input$CertificatePick, "[ ]")
+      if(length(splitted) > 1){
+        df_iter <- overallData2
+        for (s in splitted){
+          temp <-subset(df_iter, df_iter$Certificate %in% s)
+          title <- temp[!duplicated(temp["Title"]),]
+          
+          if(nrow(title) == 0){
+            temp
+          }
+          else{
+            temp <- temp[temp$Title %in% title$Title,]
+          }
+          df_iter <- rbind(df_iter, temp)
+        } 
+        overallData2 <- temp
+      }
+      else{
+        temp <- overallData2[overallData2$Certificate %in% input$CertificatePick,]
+        if(nrow(temp) == 0){
+          overallData2
+        }
+        else{
+          overallData2 <- overallData2[overallData2$Certificate %in% input$CertificatePick,]
+        }
+      }
     }
     
+    # Handle running time pick
     if(input$RunningTimePick == "All"){
-      
+      overallData2
     }
     else{
-      overallData2 <- overallData2[overallData2$Running.Time == input$RunningTimePick,]
+      temp <- overallData2[overallData2$Running.Time %in% input$RunningTimePick,]
+      if(nrow(temp) == 0){
+        overallData2
+      }
+      else{
+        overallData2 <- overallData2[overallData2$Running.Time == input$RunningTimePick,]
+      }
     }
     
+    # Handle Year pick
     if(input$YearPick == "All"){
-      
+      overallData2
     }
     else{
-      overallData2 <- overallData2[overallData2$Year == input$YearPick,]
+      temp <- overallData2[overallData2$Year %in% input$YearPick,]
+      if(nrow(temp) == 0){
+        overallData2
+      }
+      else{
+        overallData2 <- overallData2[overallData2$Year %in% input$YearPick,]
+      }
     }
     
+    #Handle Decade Pick
     if(input$DecadePick == "All"){
-      
+      overallData2
     }
     else{
-      overallData2 <- overallData2[overallData2$Decade == input$DecadePick,]
+      temp <- overallData2[overallData2$Decade %in% input$DecadePick,]
+      if(nrow(temp) == 0){
+        overallData2
+      }
+      else{
+        overallData2 <- overallData2[overallData2$Decade %in% input$DecadePick,]
+      }
     }
+    
     overallData2["set"] <- "Filtered"
     overallData2
   })
@@ -349,9 +450,9 @@ server <- function(input, output) {
   })
   
   isFiltered <- reactive({
-    if(input$GenrePick == "All" 
-       && input$KeywordPick == "All" 
-       && input$CertificatePick == "All" 
+    if(is.null(input$GenrePick) 
+       && is.null(input$KeywordPick) 
+       && is.null(input$CertificatePick) 
        && input$RunningTimePick == "All" 
        && input$YearPick == "All" 
        && input$DecadePick == "All") {
