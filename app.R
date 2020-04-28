@@ -8,6 +8,8 @@
 library(shiny)
 library(shinydashboard)
 library(ggplot2)
+library(devtools)
+library(dashboardthemes)
 
 #read in data from csv 
 #(use rawdata and save into a new dataframe for your stuff ex: variableName <- rawdata)
@@ -168,6 +170,11 @@ ui <- dashboardPage(
     #     )
     #   )
     # ), #end tags
+
+  # theme setting
+  shinyDashboardThemes(
+    theme = "poor_mans_flatly"
+  ),
     
   fluidRow(
     infoBoxOutput("criteriaMov", width = 3),infoBoxOutput("avgYear", width = 3), infoBoxOutput("avgMonth", width = 3), infoBoxOutput("avgRuntime", width = 3)
@@ -611,7 +618,7 @@ server <- function(input, output) {
       ggplot(df) +
         aes(x = factor(Decade), y = Percent) +
         geom_col(position = "dodge") +
-        labs(title="Number of Movies Released per Decade",caption="source: Decade") +
+        labs(title="Percent of Movies Released per Decade Meeting Criteria",caption="source: Decade") +
         labs(x = "Decade", y = "Percent") +
         theme(axis.text.x = element_text(angle=65, vjust=0.6)) +
         scale_y_continuous(labels = scales::percent)
@@ -625,7 +632,7 @@ server <- function(input, output) {
       ggplot(df1) +
         aes(x = Decade, y = Percent) +
         geom_col( fill="tomato3") +
-        labs(title="Number of Movies Released per Decade",caption="source: Decade") +
+        labs(title="Percent of Movies Released per Decade Meeting Criteria",caption="source: Decade") +
         labs(x = "Decade", y = "Count") +
         theme(axis.text.x = element_text(angle=65, vjust=0.6)) +
         #copied this code from https://stackoverflow.com/questions/11335836/increase-number-of-axis-ticks
@@ -727,7 +734,7 @@ server <- function(input, output) {
       ggplot(df) +
         aes(x = factor(Year), y = Percent) +
         geom_col(position = "dodge") +
-        labs(title="Number of Movies Released per Year",caption="source: Year") +
+        labs(title="Percent of Movies Released per Year Meeting Criteria",caption="source: Year") +
         labs(x = "Year", y = "Percent") +
         theme(axis.text.x = element_text(angle=65, vjust=0.6)) +
         scale_y_continuous(labels = scales::percent)
@@ -741,7 +748,7 @@ server <- function(input, output) {
       ggplot(df1) +
         aes(x = Year, y = Percent) +
         geom_col( fill="tomato3") +
-        labs(title="Number of Movies Released per Year",caption="source: Year") +
+        labs(title="Percent of Movies Released per Year Meeting Criteria",caption="source: Year") +
         labs(x = "Year", y = "Count") +
         theme(axis.text.x = element_text(angle=65, vjust=0.6)) +
         #copied this code from https://stackoverflow.com/questions/11335836/increase-number-of-axis-ticks
@@ -842,7 +849,7 @@ server <- function(input, output) {
       ggplot(df) +
         aes(x = factor(Month), y = Percent) +
         geom_col(position = "dodge") +
-        labs(title="Number of Movies Released per Month",caption="source: Month") +
+        labs(title="Percent of Movies Released per Month Meeting Criteria",caption="source: Month") +
         labs(x = "Month", y = "Percent") +
         theme(axis.text.x = element_text(angle=65, vjust=0.6)) +
         scale_y_continuous(labels = scales::percent)
@@ -856,7 +863,7 @@ server <- function(input, output) {
       ggplot(df1) +
         aes(x = Month, y = Percent) +
         geom_col( fill="tomato3") +
-        labs(title="Number of Movies Released per Month",caption="source: Month") +
+        labs(title="Percent of Movies Released per Month Meeting Criteria",caption="source: Month") +
         labs(x = "Month", y = "Count") +
         theme(axis.text.x = element_text(angle=65, vjust=0.6)) +
         #copied this code from https://stackoverflow.com/questions/11335836/increase-number-of-axis-ticks
